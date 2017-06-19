@@ -15,12 +15,12 @@ sr = SequenceReader()
 sr.read('./biodata/UCNEs/hg19_UCNEs.fasta')
 hd = sr.getDictionary()
 
-print hd
+print "Gained Human Dictionary"
 
 sr.read('./biodata/UCNEs/galGal3_UCNEs.fasta')
 cd = sr.getDictionary()
 
-print cd
+print "Gained Chicken Dictionary"
 
 n=3
 Dwin=2
@@ -36,10 +36,14 @@ for key,a in hd.iteritems():
     ngg[i] = DocumentNGramGraph(3,2,a)
     i+=1
 
+print "Graphs Created for Humans"
+
 for key,b in cd.iteritems():
     subjectMap[i] = (key,'chickens')
     ngg[i] = DocumentNGramGraph(3,2,b)
     i+=1
+
+print "Graphs Created for Chickens"
 
 S = np.empty([l, l])
 L = np.empty([l])
@@ -67,7 +71,9 @@ for key,b in cd.iteritems():
         S[i,l] = sop.getSimilarityDouble(ngg[i],ngg[l])
         l+=1
     i+=1
-        
+
+print "Similarity matrix constructed.."
+
 svm = SVM()
 reps = 10
 acc = 0
@@ -78,6 +84,7 @@ L1 = L[0:l1]
 L2 = L[l1:]
 
 for i in range(1, reps+1):
+    print "Classification round: "+str(i)
     tr1, te1, trl1, tel1 = randPerm(S1,L1,fact=0.8)
     tr2, te2, trl2, tel2 = randPerm(S2,L2,fact=0.8)
     

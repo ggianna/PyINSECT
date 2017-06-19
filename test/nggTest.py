@@ -23,4 +23,3 @@ nop = LtoRNary(bop)
 # functions arguments
 # as fields on ar's
 bop.apply(ngg1,ngg2).GraphDraw()
-

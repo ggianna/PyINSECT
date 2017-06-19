@@ -32,5 +32,5 @@ Bio I/O Dependencies:
 - sudo pip install biopython
 
 SVM/classifier Dependencies:
-sudo pip install scipy
-sudo pip install sklearn
+- sudo pip install scipy
+- sudo pip install sklearn
