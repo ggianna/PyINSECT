@@ -92,7 +92,7 @@ class Union(BinaryOperator):
         
         gg2 = b.getGraph()
         rg = r.getGraph()
-        re = rg.edges()
+        re = set(rg.edges()) # Convert edge-list to set to speed-up look-up
         
         # pseudocode:
         # For graphs G1,G2 where smallGraph = min(G1,G2) & bigGraph = max(G1,G2)
@@ -156,7 +156,7 @@ class Intersect(BinaryOperator):
         gg2 = b.getGraph()
         
         rg = r.getGraph()
-        re = rg.edges(data=True)        
+        re = rg.edges(data=True)
         
         # pseudocode:
         # For graphs G1,G2 where smallGraph = min(G1,G2) & bigGraph = max(G1,G2)
