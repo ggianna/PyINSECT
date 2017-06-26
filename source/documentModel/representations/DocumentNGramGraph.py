@@ -29,12 +29,14 @@ class DocumentNGramGraph:
     #stores the ngram
     _ngram = []
     #store the ngram graph
-    _Graph = nx.Graph()
+    _Graph = None
     #window for graph construction
     _Dwin = 2
     # a printing flag determining if the printing result will be stored on document or
     # be displayed on string
     _GPrintVerbose = True
+    # cache of edges (set vs. list)
+    _edges = set()
 
     # the graph stores it's maximum and minimum weigh
     _maxW = 0
@@ -69,7 +71,9 @@ class DocumentNGramGraph:
         win = self._Dwin
         
         #init graph
+        # TODO: add clear function
         self._Graph = nx.DiGraph()
+        self._edges = set()
         
         o = min(self._Dwin,s)
         if(o>=1):
@@ -106,16 +110,22 @@ class DocumentNGramGraph:
         #add an extra class variable
         A = ''.join(a)
         B = ''.join(b)
-        if (A,B) in self._Graph.edges():
+        if (A,B) in self._edges:
             edata = self._Graph.get_edge_data(A, B)
-            #print "updating edge between (",A,B,") to weigh",(edata['weight']+1)
+            # DEBUG LINES
+            # print "updating edge between (",A,B,")"
+            # print "to weight",(edata['weight']+1)
+
             r = weight=edata['weight']+w
         else:
-            #print "adding edge between (",A,B,")"
+            # DEBUG LINES
+            # print "adding edge between (",A,B,")"
+
             r = w
         # update/add edge weight
-        self.setEdge(A,B,r)
-    
+        self.setEdge(A, B, r)
+
+
     # creates ngram's of window based on @param n
     def build_ngram(self,d = []):
         self.setData(d)
@@ -156,12 +166,15 @@ class DocumentNGramGraph:
     
     # sets an edges weight
     def setEdge(self,a,b,w=1):
+        self._edges.add((a, b))  # Update cache
         self._Graph.add_edge(a, b, key='edge', weight=w)
+
         self._maxW = max(self._maxW,w)
         self._minW = min(self._minW,w)
 	
 	# deletes
     def delEdge(self,u,v):
+        self._edges.remove((u,v))
         self._Graph.remove_edge(u,v)
     
 

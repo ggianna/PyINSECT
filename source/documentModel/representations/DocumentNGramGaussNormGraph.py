@@ -47,7 +47,7 @@ class DocumentNGramGaussNormGraph(DocumentNGramGraph):
                 j = 1
                 for w in window:
                     # weigh in the correct way
-                    self.addEdgeInc(gram,w,format(self.pdf(j),'.2f'))
+                    self.addEdgeInc(gram,w,float(format(self.pdf(j),'.2f')))
                     j+=1
                 window.pop(0)
                 # if window's edge has reached

@@ -79,7 +79,7 @@ class SimilarityVS(Similarity):
         s = 0.0
         g1 = ngg1.getGraph()
         g2 = ngg2.getGraph()
-        edges2 = g2.edges()
+        edges2 = set(g2.edges()) # Use set to speed up finding
         for (u,v,d) in g1.edges(data=True):
             if((u,v) in edges2):
                 dp = g2.get_edge_data(u, v)
