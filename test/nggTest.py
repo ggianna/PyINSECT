@@ -1,25 +1,22 @@
 import pdb
 import sys
 sys.path.append('..')
-from source import *
+from source import representations as NGG
+from source import comparators as CMP
 
-ngg1 = DocumentNGramGraph(3,2,"abcdef")
-ngg2 = DocumentNGramGraph(3,2,"abcdeff")
+ngg1 = NGG.DocumentNGramGraph(3,2,"abcdef")
+ngg2 = NGG.DocumentNGramGraph(3,2,"abcdeff")
 #ngg1.GraphDraw()
 #ngg2.GraphDraw()
-gs = SimilarityNVS()
+gs = CMP.SimilarityNVS()
 
 sc = gs.getSimilarityComponents(ngg1,ngg2)
 print sc["SS"]," ",sc["VS"]
 print gs.getSimilarityFromComponents(sc)
 
-nop = LtoRNary(gs)
+nop = CMP.LtoRNary(gs)
 print gs.apply(ngg1,ngg2)
-bop = Union(lf=0.5, commutative=True,distributional=True)
-nop = LtoRNary(bop)
-# strange error still here
-# maybe dependent with 
-# garbage collecting
-# functions arguments
-# as fields on ar's
+bop = CMP.Union(lf=0.5, commutative=True,distributional=True)
+nop = CMP.LtoRNary(bop)
+
 bop.apply(ngg1,ngg2).GraphDraw()

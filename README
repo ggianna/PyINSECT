@@ -34,3 +34,7 @@ Bio I/O Dependencies:
 SVM/classifier Dependencies:
 - sudo pip install scipy
 - sudo pip install sklearn
+
+Parallel Execution:
+- sudo pip install joblib
+- sudo pip install multiprocessing

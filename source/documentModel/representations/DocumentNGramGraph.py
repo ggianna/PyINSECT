@@ -116,7 +116,7 @@ class DocumentNGramGraph:
             # print "updating edge between (",A,B,")"
             # print "to weight",(edata['weight']+1)
 
-            r = weight=edata['weight']+w
+            r = edata['weight']+w
         else:
             # DEBUG LINES
             # print "adding edge between (",A,B,")"

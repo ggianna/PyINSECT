@@ -303,9 +303,6 @@ class Update(NaryOperator):
                 return copy.deepcopy(args[0])
             else:
                 res = args[0]
-                # !!! Strange error on return ...
-                # if printed here, result is regular
-                # returned object is of none type
                 return res
         else:
             # Apply on the first two
@@ -319,7 +316,7 @@ class Update(NaryOperator):
             z = self._Op.apply(args[0],args[1],dc=dc)
             q = list(args[2:])
             # with the same method on the rest of the elements
-            self.apply(*([z] + q),dc=False)
+            return self.apply(*([z] + q),dc=False)
 
 # Implements a way parallel way for 
 # applying an Nary operator
@@ -364,9 +361,6 @@ class ParallelNary(NaryOperator):
             if(dc):
                 return copy.deepcopy(args[0])
             else:
-                # !!! Strange error on return ...
-                # if printed here, result is regular
-                # returned object is of none type
                 return args[0]
         else:
             l = []
@@ -475,9 +469,6 @@ class LtoRNary(NaryOperator):
             if(dc):
                 return copy.deepcopy(args[0])
             else:
-                # !!! Strange error on return ...
-                # if printed here, result is regular
-                # returned object is of none type
                 return args[0]
         else:
             # Apply on the first two
