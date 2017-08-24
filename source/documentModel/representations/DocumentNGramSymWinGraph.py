@@ -30,7 +30,8 @@ class DocumentNGramSymWinGraph(DocumentNGramGraph):
         
         # initialize graph
         self._Graph = nx.Graph()
-        
+        self._edges = set()
+
         if(s>=2 and win>=1):
             # max possible window size (bounded by win)
             o = min(win,s)+1

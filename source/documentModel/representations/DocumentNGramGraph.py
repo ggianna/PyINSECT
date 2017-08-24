@@ -142,10 +142,10 @@ class DocumentNGramGraph:
         return q
      
     # draws a graph using math plot lib
-    def GraphDraw(self, verbose = True, lf = True, ns = 1000, wf= True):
+    def GraphDraw(self, verbose = True, print_name = 'graph', lf = True, ns = 1000, wf= True):
         pos = graphviz_layout(self._Graph)
-        #pos = sring_layout(self._Graph, scale=1)
-        #nx.draw(self._Graph,pos = pos,node_size=ns,with_labels = lf, node_color = 'm')
+        # pos = sring_layout(self._Graph, scale=1)
+        # nx.draw(self._Graph,pos = pos,node_size=ns,with_labels = lf, node_color = 'm')
         nx.draw(self._Graph, pos=graphviz_layout(self._Graph), node_size=ns, cmap=plt.cm.Blues, node_color=range(len(self._Graph)), prog='dot', with_labels = lf)
         if wf:
             weight_labels = nx.get_edge_attributes(self._Graph,'weight')
@@ -153,9 +153,11 @@ class DocumentNGramGraph:
         if verbose:
             plt.show()
         else:
-            #plt.savefig('g.png')
-            #or to dot
-            nx.drawing.nx_pydot.write_dot(self._Graph,'g.dot')
+            # plt.savefig('g.png')
+            # or to dot
+            nx.drawing.nx_pydot.write_dot(self._Graph,print_name+'.dot')
+            # !!Uknown error: the produced dot file is
+            # not readable by dot/xdot.
     
     ## set functions for structure's protected fields
 

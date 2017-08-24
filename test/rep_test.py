@@ -2,11 +2,17 @@ import sys
 sys.path.append('..')
 from source import representations as NGG
 
-ngg = NGG.DocumentNGramGraph(3,2,"abcdef")
+# a test for the family of ngrams
+
+n = 3
+Dwin = 2
+text = "GATTACATTAG"
+
+ngg = NGG.DocumentNGramGraph(n,Dwin,text)
 ngg.GraphDraw()
 
-ngswg = NGG.DocumentNGramSymWinGraph(3,4,"abcdef")
+ngswg = NGG.DocumentNGramSymWinGraph(n,Dwin,text)
 ngswg.GraphDraw()
 
-nggng = NGG.DocumentNGramGaussNormGraph(3,4,"abcdefg")
+nggng = NGG.DocumentNGramGaussNormGraph(n,Dwin,text)
 nggng.GraphDraw()
