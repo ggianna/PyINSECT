@@ -44,7 +44,6 @@ class Similarity(BinaryOperator):
         return 0.0
 	
     def apply(self,*args,**kwargs):
-      super(Similarity, self).apply(*args)
       return self.getSimilarityDouble(*args)
 
 class SimilaritySS(Similarity):
@@ -79,6 +78,12 @@ class SimilarityVS(Similarity):
         s = 0.0
         g1 = ngg1.getGraph()
         g2 = ngg2.getGraph()
+        ne1 = g1.number_of_edges()
+        ne2 = g2.number_of_edges()
+        if(ne1>ne2):
+            t = g2
+            g2 = g1
+            g1 = t
         edges2 = set(g2.edges()) # Use set to speed up finding
         for (u,v,d) in g1.edges(data=True):
             if((u,v) in edges2):
