@@ -17,8 +17,8 @@ class NGramGraphCollector:
     """
         Adds the graph of the input text to the representative graph.
     """
-    def addText(self, sText, bDeepCopy=False):
-        ngg1 = DocumentNGramGraph(3,3,sText)
+    def addText(self, sText, bDeepCopy=False, n = 3, Dwin = 3):
+        ngg1 = DocumentNGramGraph(n,Dwin,sText)
         self.addGraph(ngg1, bDeepCopy)
 
         
@@ -38,8 +38,8 @@ class NGramGraphCollector:
         Returns a degree of ''appropriateness'' of a text, given the representative graph.
         Essentially it calculates the Normalized Value Similarity of the text to the representative graph.
     """
-    def getAppropriateness(self, sText):
-        nggNew = DocumentNGramGraph(3,3,sText)
+    def getAppropriateness(self, sText, n = 3, Dwin = 3):
+        nggNew = DocumentNGramGraph(n,Dwin,sText)
         gs = SimilarityNVS()
         return gs.getSimilarityDouble(nggNew, self._gOverallGraph)
 
