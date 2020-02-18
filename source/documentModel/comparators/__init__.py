@@ -1,2 +1,2 @@
-from NGramGraphSimilarity import *
-from Operator import *
+from .NGramGraphSimilarity import *
+from .Operator import *

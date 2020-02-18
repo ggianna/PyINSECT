@@ -66,7 +66,7 @@ class Union(BinaryOperator):
         # default operation is deepcopy
         # inorder to not corrupt the original 
         # mutable input arguments
-        if(kwargs.has_key("dc")):
+        if("dc" in kwargs):
             dc = kwargs["dc"]
         else:
             dc = True
@@ -131,7 +131,7 @@ class Intersect(BinaryOperator):
         # default operation is deepcopy
         # inorder to not corrupt the original 
         # mutable input arguments
-        if(kwargs.has_key("dc")):
+        if("dc" in kwargs):
             dc = kwargs["dc"]
         else:
             dc = True
@@ -176,7 +176,7 @@ class Intersect(BinaryOperator):
                 # delte the non common
                 r.delEdge(u,v)
         # deletes unreached nodes (trims graph)
-		r.deleteUnreachedNodes()
+        r.deleteUnreachedNodes()
         return r
 
 # applies a delta operator between two arguments
@@ -187,10 +187,10 @@ class delta(BinaryOperator):
         super(self.__class__, self).apply(*args)
         
         # a checks for a deepcopy argument
-		# default operation is deepcopy
+        # default operation is deepcopy
         # inorder to not corrupt the original 
         # mutable input arguments
-        if(kwargs.has_key("dc")):
+        if("dc" in kwargs):
             dc = kwargs["dc"]
         else:
             dc = True
@@ -235,7 +235,7 @@ class inverse_intersection(BinaryOperator):
         # default operation is deepcopy
         # inorder to not corrupt the original 
         # mutable input arguments
-        if(kwargs.has_key("dc")):
+        if("dc" in kwargs):
             dc = kwargs["dc"]
         else:
             dc = True
@@ -282,7 +282,7 @@ class Update(NaryOperator):
     
     def apply(self,*args,**kwargs):
         
-        if(kwargs.has_key("dc")):
+        if("dc" in kwargs):
             dc = kwargs["dc"]
         else:
             dc = True
@@ -295,7 +295,7 @@ class Update(NaryOperator):
             # call UnionOp.apply.(leftItem, rightItem)
         # apply recursively
 
-		# recursion sink: 0->problem, 1->return.
+        # recursion sink: 0->problem, 1->return.
         if (nargs==0):
             return None
         elif (nargs==1):
@@ -338,23 +338,23 @@ class ParallelNary(NaryOperator):
             if(not op._distributable):
                 warnings.warn("Given operator is not defined as distributable.\nResult may be false.", UserWarning)
         except AttributeError:
-				warnings.warn("Given operator is not defined as distributable.\nResult may be false.", UserWarning)        
+                warnings.warn("Given operator is not defined as distributable.\nResult may be false.", UserWarning)        
 
     # applies an Nary Parallel operator
     def apply(self,*args,**kwargs):
-		
+        
         # a checks for a deepcopy argument
         # default operation is deepcopy
         # inorder to not corrupt the original 
         # mutable input arguments		
-        if(kwargs.has_key("dc")):
+        if("dc" in kwargs):
             dc = kwargs["dc"]
         else:
             dc = True
         nargs = len(args)
-        print nargs
+        print(nargs)
 
-		# recursion sink
+        # recursion sink
         if (nargs==0):
             return None
         elif (nargs==1):
@@ -382,13 +382,13 @@ class ParallelNary(NaryOperator):
 
             # positive threads mean's run at most n threads
             i=0
-			# for positive threads
+            # for positive threads
             if(self._nthreads>0):
                 for (a,b) in l:
                     thr = threading.Thread(target=self._executor, args=(self._Op.apply,a,b,dc,fargs,str(i),lock))
                     threads.append(thr) 
                     i+=1
-					#group - start - join every time we reach n threads
+                    #group - start - join every time we reach n threads
                     if(i%nthreads==0):
                         # start threads
                         [t.start() for t in threads]
@@ -421,9 +421,9 @@ class ParallelNary(NaryOperator):
             #
             if((nargs%2)!=0):
                 fargs[str(len(l))]=args[-1]
-                return self.apply(*(fargs.values()),dc = False)
+                return self.apply(*(list(fargs.values())),dc = False)
             else:
-                return self.apply(*(fargs.values()), dc = False)
+                return self.apply(*(list(fargs.values())), dc = False)
             
             
     # a single executor for parallel Nary
@@ -445,7 +445,7 @@ class LtoRNary(NaryOperator):
         self._Op = op
     
     # L to R Nary operator application
-	# Pseudo code
+    # Pseudo code
     # Start from left
         # while I have more items to the right
             # Get next item
@@ -456,7 +456,7 @@ class LtoRNary(NaryOperator):
         # default operation is deepcopy
         # inorder to not corrupt the original 
         # mutable input arguments
-        if(kwargs.has_key("dc")):
+        if("dc" in kwargs):
             dc = kwargs["dc"]
         else:
             dc = True
@@ -475,6 +475,6 @@ class LtoRNary(NaryOperator):
             z = self._Op.apply(args[0],args[1],dc=dc)
             q = list(args[2:])
             # recursively apply the result to the rest
-			# now dc is false
+            # now dc is false
             return self.apply(*([z] + q),dc=False)
             

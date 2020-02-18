@@ -146,7 +146,7 @@ class DocumentNGramGraph:
         pos = graphviz_layout(self._Graph)
         # pos = sring_layout(self._Graph, scale=1)
         # nx.draw(self._Graph,pos = pos,node_size=ns,with_labels = lf, node_color = 'm')
-        nx.draw(self._Graph, pos=graphviz_layout(self._Graph), node_size=ns, cmap=plt.cm.Blues, node_color=range(len(self._Graph)), prog='dot', with_labels = lf)
+        nx.draw(self._Graph, pos=graphviz_layout(self._Graph), node_size=ns, cmap=plt.cm.Blues, node_color=list(range(len(self._Graph))), prog='dot', with_labels = lf)
         if wf:
             weight_labels = nx.get_edge_attributes(self._Graph,'weight')
             nx.draw_networkx_edge_labels(self._Graph,pos = pos,edge_labels = weight_labels)
@@ -210,7 +210,7 @@ class DocumentNGramGraph:
         return self._minW
 
     def number_of_edges(self):
-        return self._Graph.number_of_nodes();
+        return self._Graph.number_of_nodes()
 #test script
 
 #1. construct a 2-gram graph of window_size = 2

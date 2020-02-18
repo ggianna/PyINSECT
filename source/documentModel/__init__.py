@@ -1,2 +1,2 @@
-from representations import *
-from comparators import *
+from .representations import *
+from .comparators import *

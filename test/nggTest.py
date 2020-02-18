@@ -11,11 +11,11 @@ ngg2 = NGG.DocumentNGramGraph(3,2,"abcdeff")
 gs = CMP.SimilarityNVS()
 
 sc = gs.getSimilarityComponents(ngg1,ngg2)
-print sc["SS"]," ",sc["VS"]
-print gs.getSimilarityFromComponents(sc)
+print((sc["SS"]," ",sc["VS"]))
+print((gs.getSimilarityFromComponents(sc)))
 
 nop = CMP.LtoRNary(gs)
-print gs.apply(ngg1,ngg2)
+print((gs.apply(ngg1,ngg2)))
 bop = CMP.Union(lf=0.5, commutative=True,distributional=True)
 nop = CMP.LtoRNary(bop)
 

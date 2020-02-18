@@ -1,3 +1,3 @@
-from DocumentNGramGaussNormGraph import *
-from DocumentNGramSymWinGraph import *
-from DocumentNGramGraph import *
+from .DocumentNGramGaussNormGraph import *
+from .DocumentNGramSymWinGraph import *
+from .DocumentNGramGraph import *

@@ -9,7 +9,7 @@ import networkx as nx
 import pygraphviz as pgv
 import matplotlib.pyplot as plt
 from networkx.drawing.nx_agraph import graphviz_layout
-from DocumentNGramGraph import DocumentNGramGraph
+from .DocumentNGramGraph import DocumentNGramGraph
 import math
 
 class DocumentNGramGaussNormGraph(DocumentNGramGraph):
@@ -70,8 +70,8 @@ class DocumentNGramGaussNormGraph(DocumentNGramGraph):
         self._mean = mean
         self._a = 1.0/(sigma * math.sqrt(2*math.pi))
         self._b = 2.0*(sigma**2)
-        print self._a
-        print self._b
+        print(self._a)
+        print(self._b)
         
     # calculates given a distance and a mena given inside
     # the 

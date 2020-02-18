@@ -1,6 +1,9 @@
 #!/usr/bin/python
 import pdb
+import random
+import time
 from documentModel import *
+
 
 """
  An n-gram graph collector, which can create representative graphs of text/graph sets
@@ -39,7 +42,7 @@ class NGramGraphCollector:
         Essentially it calculates the Normalized Value Similarity of the text to the representative graph.
     """
     def getAppropriateness(self, sText, n = 3, Dwin = 3):
-        nggNew = DocumentNGramGraph(n,Dwin,sText)
+        nggNew = DocumentNGramGraph(n, Dwin, sText)
         gs = SimilarityNVS()
         return gs.getSimilarityDouble(nggNew, self._gOverallGraph)
 
@@ -61,32 +64,29 @@ class NGramGraphCollector:
 
 
 if __name__ == "__main__":
-    import random;
-    import time;
-
 
     def getRandomText(iSize):
         # lCands = list("abcdefghijklmnopqrstuvwxyz" + "abcdefghijklmnopqrstuvwxyz".upper() + "1234567890!@#$%^&*()")
         lCands = list("abcdef")
-        sRes = "".join([ random.choice(lCands) for i in range(1,iSize) ])
+        sRes = "".join([ random.choice(lCands) for i in range(1, iSize)])
         return sRes
 
 
     # Start test
     import time
 
-    print "Initializing texts..."
+    print("Initializing texts...")
     lTexts = list()
-    for iCnt in range(0,50):
+    for iCnt in range(0, 50):
         # Select text size
-        iSize = random.randint(1000,2000);
+        iSize = random.randint(1000, 2000)
         sText = getRandomText(iSize)
         # Add to list
         lTexts.append(sText)
-    print "Initializing texts... Done."
+    print("Initializing texts... Done.")
 
 
-    print "Starting shallow..."
+    print("Starting shallow...")
     cNoDeep = NGramGraphCollector()
     start = time.time()
     lastStep = start
@@ -96,12 +96,12 @@ if __name__ == "__main__":
         cNoDeep.addText(sText)
         iCnt += 1
         if (time.time() - lastStep > 1):
-            print "..." + str(iCnt)
+            print("..." + str(iCnt))
             lastStep = time.time()
 
     end = time.time()
-    print(end - start)
-    print "End shallow."
+    print((end - start))
+    print("End shallow.")
 
     # print "Starting deep..."
     # cDeep = NGramGraphCollector()

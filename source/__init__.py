@@ -1,2 +1,2 @@
-from documentModel import *
-from NGramGraphCollector import *
+from .documentModel import *
+from .NGramGraphCollector import *

@@ -9,7 +9,7 @@ import networkx as nx
 import pygraphviz as pgv
 import matplotlib.pyplot as plt
 from networkx.drawing.nx_agraph import graphviz_layout
-from DocumentNGramGraph import DocumentNGramGraph
+from .DocumentNGramGraph import DocumentNGramGraph
 
 class DocumentNGramSymWinGraph(DocumentNGramGraph):
     # an extension of DocumentNGramGraph

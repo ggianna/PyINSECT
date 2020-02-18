@@ -14,7 +14,7 @@
  
  @author ysig
 """
-from Operator import *
+from .Operator import *
 
 
 # a general similarity class
@@ -69,7 +69,7 @@ class SimilaritySS(Similarity):
     # extracts the SS measure
     # if existent and returns it (as double)
     def getSimilarityFromComponents(self,Dict):
-        if (Dict.has_key("SS")):
+        if ("SS" in Dict):
             return Dict["SS"]
         else: 
             return 0.0
@@ -107,7 +107,7 @@ class SimilarityVS(Similarity):
     # extracts the SS measure
     # if existent and returns it (as double)
     def getSimilarityFromComponents(self,Dict):
-        if (Dict.has_key("VS")):
+        if ("VS" in Dict):
             return Dict["VS"]
         else: 
             return 0.0
@@ -134,7 +134,7 @@ class SimilarityNVS(Similarity):
     # SS similarity and VS similarity
     # extracts NVS if SS is not 0
     def getSimilarityFromComponents(self,Dict):
-        if((Dict.has_key("SS") and Dict.has_key("VS")) and (str(Dict["SS"]) != "0.0")):
+        if(("SS" in Dict and "VS" in Dict) and (str(Dict["SS"]) != "0.0")):
             return (Dict["VS"]*1.0)/Dict["SS"]
         else:
             return 0.0
