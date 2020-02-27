@@ -1,10 +1,3 @@
-#!/usr/bin/python
-import pdb
-import random
-import time
-from documentModel import *
-
-
 """
  An n-gram graph collector, which can create representative graphs of text/graph sets
  and can calculate appropriateness (essentially the similarity) of a text, with respect 
@@ -12,6 +5,15 @@ from documentModel import *
  
  @author ggianna
 """
+
+import random
+import time
+from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
+from pyinsect.documentModel.comparators.Operator import Union
+from pyinsect.documentModel.comparators.NGramGraphSimilarity import SimilarityNVS
+
+
+
 class NGramGraphCollector:
     def __init__(self):
         self._iDocs = 0.0

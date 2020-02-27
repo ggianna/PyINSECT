@@ -1,22 +1,16 @@
-#!/usr/bin/env python
-
 """
    NGramCachedGraphComparator.py
  
-   Created on May 24, 2017, 3:56 PM
-"""
-
-"""
  An n-gram graph similarity class
  that calculates a set of ngram graph
  similarity measures implementing
  basic similarity extraction functions.
  
  @author ysig
+ Created on May 24, 2017, 3:56 PM
 """
-from .Operator import *
 
-
+from pyinsect.documentModel.comparators.Operator import BinaryOperator
 # a general similarity class
 # that acts as a pseudo-interface
 # defining the basic class methods

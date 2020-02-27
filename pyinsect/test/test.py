@@ -1,8 +1,6 @@
-#!/usr/bin/env python
-import pdb
 import sys
-# sys.path.append('..')
-from source import NGramGraphCollector
+from pyinsect.collector.NGramGraphCollector import NGramGraphCollector
+# from NGramGraphCollector import NGramGraphCollector
 
 ngc = NGramGraphCollector()
 print("Adding texts...")
