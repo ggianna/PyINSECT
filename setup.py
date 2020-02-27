@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyinsect-ggianna", # Replace with your own username
-    version="0.0.2",
+    version="0.0.3",
     author="George Giannakopoulos",
     author_email="ggianna@iit.demokritos.gr",
     description="A python port of the JInsect toolkit",
