@@ -1,4 +1,5 @@
 import sys
+sys.path.append('..')
 from pyinsect.collector.NGramGraphCollector import NGramGraphCollector
 # from NGramGraphCollector import NGramGraphCollector
 

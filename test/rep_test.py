@@ -8,11 +8,11 @@ n = 3
 Dwin = 2
 text = "GATTACATTAG"
 
-ngg = NGG.DocumentNGramGraph.DocumentNGramGraph(n,Dwin,text)
+ngg = NGG.DocumentNGramGraph(n,Dwin,text)
 ngg.GraphDraw()
 
-ngswg = NGG.DocumentNGramSymWinGraph.DocumentNGramSymWinGraph(n,Dwin,text)
+ngswg = NGG.DocumentNGramSymWinGraph(n,Dwin,text)
 ngswg.GraphDraw()
 
-nggng = NGG.DocumentNGramGaussNormGraph.DocumentNGramGaussNormGraph(n,Dwin,text)
+nggng = NGG.DocumentNGramGaussNormGraph(n,Dwin,text)
 nggng.GraphDraw()
