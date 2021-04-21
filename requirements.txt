@@ -1,0 +1,5 @@
+networkx~=2.5.1
+matplotlib~=3.4.1
+pydot~=1.4.2
+pydotplus~=2.0.2
+pygraphviz~=1.7
