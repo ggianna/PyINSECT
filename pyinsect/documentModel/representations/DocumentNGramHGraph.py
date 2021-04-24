@@ -1,3 +1,5 @@
+from functools import reduce
+
 from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
 
 
@@ -43,6 +45,7 @@ class DocumentNGramHGraph(DocumentNGramHSubGraph):
     def __init__(self, levels, n=3, Dwin=2, Data=[], GPrintVerbose=True):
         self.levels = levels
         self.original_data = Data
+        self.subgraphs = []
 
         super().__init__(n=n, Dwin=Dwin, Data=Data, GPrintVerbose=GPrintVerbose)
 
@@ -55,9 +58,12 @@ class DocumentNGramHGraph(DocumentNGramHSubGraph):
                 n=self._n, Dwin=window_size, Data=sequence, GPrintVerbose=True
             )
 
+            self.subgraphs.append(document_n_gram_graph)
             sequence = document_n_gram_graph.lookup_table
 
-        self._Dwin = int(self._Dwin * (level + 1))
-        super().buildGraph(verbose=verbose, d=sequence)
+        if self.levels > 1:
+            self._Dwin = int(self._Dwin * (level + 1))
 
-        return self._Graph
+        self.subgraphs = self.subgraphs[::-1]
+
+        return super().buildGraph(verbose=verbose, d=sequence)
