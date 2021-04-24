@@ -10,17 +10,8 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
         self.ngg2 = NGG.DocumentNGramHGraph(2, 3, 2, "abcdef")
 
     def test_similarity(self):
-        # ngg1.GraphDraw()
-        # ngg2.GraphDraw()
-        gs = CMP.SimilarityNVS()
+        smlr = CMP.SimilarityVSHPG()
 
-        sc = gs.getSimilarityComponents(self.ngg1, self.ngg2)
-        print(sc["SS"], " ", sc["VS"])
-        print(gs.getSimilarityFromComponents(sc))
+        value = smlr.apply(self.ngg1, self.ngg2)
 
-        nop = CMP.LtoRNary(gs)
-        print(gs.apply(self.ngg1, self.ngg2))
-        bop = CMP.Union(lf=0.5, commutative=True, distributional=True)
-        nop = CMP.LtoRNary(bop)
-
-        # bop.apply(self.ngg1, self.ngg2).GraphDraw()
+        self.assertEqual(value, 1)
