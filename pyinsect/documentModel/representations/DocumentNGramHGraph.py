@@ -1,5 +1,3 @@
-from functools import reduce
-
 from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
 
 
