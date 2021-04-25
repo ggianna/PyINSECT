@@ -1,5 +1,6 @@
 import networkx as nx
-from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
+from pyinsect.documentModel.representations.DocumentNGramGraph import \
+    DocumentNGramGraph
 
 
 class DocumentNGramHSubGraph(DocumentNGramGraph):
@@ -15,8 +16,15 @@ class DocumentNGramHSubGraph(DocumentNGramGraph):
     def buildGraph(self, verbose=False, d=[]):
         super().buildGraph(verbose=verbose, d=d)
 
+        visited = set()
         for node in self._Graph.nodes:
-            subset = [node] + list(self._Graph.neighbors(node))
+            subset = tuple(set([node] + list(self._Graph.neighbors(node))))
+
+            if subset in visited:
+                continue
+
+            visited.add(subset)
+
             subgraph = self._Graph.subgraph(subset)
             self.symbols.append(subgraph)
 
