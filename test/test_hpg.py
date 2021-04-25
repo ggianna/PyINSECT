@@ -1,4 +1,5 @@
 import itertools
+import logging
 import random
 import string
 import unittest
@@ -8,10 +9,16 @@ from pyinsect.documentModel import representations as NGG
 
 
 class DocumentNGramHGraphTestCase(unittest.TestCase):
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(
+        format="%(levelname)s: %(message)s",
+        level=logging.DEBUG,
+    )
+
     def setUp(self):
         random.seed(1234)
 
-        self.text = "abcdef"
+        self.text = "".join(random.choice(string.ascii_letters) for _ in range(5))
 
         self.metric = CMP.SimilarityVSHPG()
 
@@ -33,6 +40,8 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
                 ngg2 = NGG.DocumentNGramHGraph(2, 3, 2, self.text)
 
                 value = self.metric.apply(ngg1, ngg2)
+
+                self.logger.debug("%s %s %4.3f", self.text, "".join(permutation), value)
 
                 self.assertNotEqual(value, 1.0)
 
@@ -77,5 +86,7 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
                 ngg2 = NGG.DocumentNGramHGraph(levels2, n2, Dwin2, text2)
 
                 value = self.metric.apply(ngg1, ngg2)
+
+                self.logger.debug("%s %s %4.3f", text1, text2, value)
 
                 self.assertTrue(0.0 <= value <= 1.0)
