@@ -1,11 +1,16 @@
+import networkx as nx
 from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
 
 
 class DocumentNGramHSubGraph(DocumentNGramGraph):
-    def __init__(self, n=3, Dwin=2, Data=[], GPrintVerbose=True):
-        self.lookup_table = []
+    def __init__(self, n=3, Dwin=2, Data=[], GPrintVerbose=True, child=None):
+        self.symbols = []
+        self.child = child
 
         super().__init__(n=n, Dwin=Dwin, Data=Data, GPrintVerbose=GPrintVerbose)
+
+        if self._Graph is None:
+            self._Graph = nx.DiGraph()
 
     def buildGraph(self, verbose=False, d=[]):
         super().buildGraph(verbose=verbose, d=d)
@@ -13,7 +18,7 @@ class DocumentNGramHSubGraph(DocumentNGramGraph):
         for node in self._Graph.nodes:
             subset = [node] + list(self._Graph.neighbors(node))
             subgraph = self._Graph.subgraph(subset)
-            self.lookup_table.append(subgraph)
+            self.symbols.append(subgraph)
 
         return self._Graph
 
@@ -43,25 +48,30 @@ class DocumentNGramHGraph(DocumentNGramHSubGraph):
     def __init__(self, levels, n=3, Dwin=2, Data=[], GPrintVerbose=True):
         self.levels = levels
         self.original_data = Data
-        self.subgraphs = []
 
         super().__init__(n=n, Dwin=Dwin, Data=Data, GPrintVerbose=GPrintVerbose)
 
+        if self._Graph is None:
+            self._Graph = nx.DiGraph()
+
     def buildGraph(self, verbose=False, d=[]):
-        sequence = self._Data
-        for level in range(1, self.levels):
-            window_size = int(self._Dwin * level)
-
-            document_n_gram_graph = DocumentNGramHSubGraph(
-                n=self._n, Dwin=window_size, Data=sequence, GPrintVerbose=True
-            )
-
-            self.subgraphs.append(document_n_gram_graph)
-            sequence = document_n_gram_graph.lookup_table
-
+        child, sequence = None, self._Data
         if self.levels > 1:
+            for level in range(1, self.levels):
+                window_size = int(self._Dwin * level)
+
+                child = DocumentNGramHSubGraph(
+                    n=self._n,
+                    Dwin=window_size,
+                    Data=sequence,
+                    GPrintVerbose=True,
+                    child=child,
+                )
+
+                sequence = list(range(len(child.symbols)))
+
             self._Dwin = int(self._Dwin * (level + 1))
 
-        self.subgraphs = self.subgraphs[::-1]
+        self.child = child
 
         return super().buildGraph(verbose=verbose, d=sequence)

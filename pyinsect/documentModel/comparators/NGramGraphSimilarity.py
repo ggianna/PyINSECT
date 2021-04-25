@@ -151,12 +151,15 @@ class SimilarityNVS(Similarity):
 
 class SimilarityVSHPG(SimilarityVS):
     def getSimilarityDouble(self, ngg1, ngg2):
-        ngg2_levels = ngg2.subgraphs + [ngg2]
-        ngg1_levels = ngg1.subgraphs + [ngg1]
+        current_1, current_2, level, rv = ngg1, ngg2, 1, 0
 
-        rv = 0
-        for level, (subngg1, subngg2) in enumerate(zip(ngg1_levels, ngg2_levels)):
-            similarity = super().getSimilarityDouble(subngg1, subngg2)
-            rv += (level + 1) * similarity
+        while current_1 is not None and current_2 is not None:
+            similarity = super().getSimilarityDouble(current_1, current_2)
+            rv += level * similarity
 
-        return rv / reduce(lambda x, y: x + y, range(1, level + 2))
+            current_1 = current_1.child
+            current_2 = current_2.child
+
+            level += 1
+
+        return rv / reduce(lambda x, y: x + y, range(1, level))
