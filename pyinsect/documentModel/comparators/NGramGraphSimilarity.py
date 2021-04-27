@@ -150,6 +150,13 @@ class SimilarityNVS(Similarity):
 
 
 class SimilarityVSHPG(SimilarityVS):
+    """A custom `SimilarityVS` metric tailored to the complexities
+    of Hierarchical Proximity Graphs (HPG - `DocumentNGramHGraph`).
+
+    Given two HPGs, the `Value Similarity` of every sub-graph pair is computed,
+    on a pair level basis, and the weighted mean of among all levels is considered
+    the HPGs Value Similarity.
+    """
     def getSimilarityDouble(self, ngg1, ngg2):
         current_1, current_2, level, rv = ngg1, ngg2, 1, 0
 

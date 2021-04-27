@@ -4,7 +4,29 @@ from pyinsect.documentModel.representations.DocumentNGramGraph import \
 
 
 class DocumentNGramHSubGraph(DocumentNGramGraph):
+    """
+    `DocumentNGramHSubGraph` serves as a building element of
+    the `DocumentNGramHGraph` class. Given some data, it not only builds
+    the n-gram graph corresponding to this data, but extracts its
+    s-neighborhoods as well. It additionally points to a child
+    `DocumentNGramHSubGraph`, whose s-neighborhoods are this graph's
+    symbols.
+    """
     def __init__(self, n=3, Dwin=2, Data=[], GPrintVerbose=True, child=None):
+        """
+        Create a `DocumentNGramHSubGraph` object.
+
+        Args:
+            n (int, optional): the n-gram graph rank. Defaults to 3.
+            Dwin (int, optional): the maximum distance of 2
+            neighboring symbols. Defaults to 2.
+            Data (list, optional): the original data (for example text).
+            Defaults to [].
+            GPrintVerbose (bool, optional): wheither or not to plot the
+            resulting graph. Defaults to True.
+            child (DocumentNGramHSubGraph, optional): its child `DocumentNGramHSubGraph`.
+            Defaults to None.
+        """
         self.symbols = []
         self.child = child
 
@@ -53,7 +75,23 @@ class DocumentNGramHSubGraph(DocumentNGramGraph):
 
 
 class DocumentNGramHGraph(DocumentNGramHSubGraph):
+    """`DocumentNGramHGraph` is an implementation of a
+    `Hierarchical Proximity Graph`. It consists of a
+    hierarchy of linked `DocumentNGramHSubGraph`s.
+    """
     def __init__(self, levels, n=3, Dwin=2, Data=[], GPrintVerbose=True):
+        """Create a `DocumentNGramHGraph` object.
+
+        Args:
+            levels (int): the graph's number of levels / depth.
+            n (int, optional): the n-gram graph rank. Defaults to 3.
+            Dwin (int, optional): the maximum distance of 2
+            neighboring symbols. Defaults to 2.
+            Data (list, optional): the original data (for example text).
+            Defaults to [].
+            GPrintVerbose (bool, optional): wheither or not to plot the
+            resulting graph. Defaults to True.
+        """
         self.levels = levels
         self.original_data = Data
 
