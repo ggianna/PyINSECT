@@ -189,7 +189,7 @@ class DocumentNGramGraph:
 
     # trims the graph by removing unreached nodes
     def deleteUnreachedNodes(self):
-        self._Graph.remove_nodes_from(nx.isolates(self._Graph))
+        self._Graph.remove_nodes_from(list(nx.isolates(self._Graph)))
 
     def setN(self, n):
         self._n = n
