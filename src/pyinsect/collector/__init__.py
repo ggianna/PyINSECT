@@ -1,0 +1,1 @@
+from src.pyinsect.collector.NGramGraphCollector import NGramGraphCollector
