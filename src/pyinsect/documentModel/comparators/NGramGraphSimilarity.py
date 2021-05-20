@@ -157,6 +157,7 @@ class SimilarityVSHPG(SimilarityVS):
     on a pair level basis, and the weighted mean of among all levels is considered
     the HPGs Value Similarity.
     """
+
     def getSimilarityDouble(self, ngg1, ngg2):
         current_1, current_2, level, rv = ngg1, ngg2, 1, 0
 

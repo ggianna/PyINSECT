@@ -7,9 +7,9 @@
  *
 """
 
+import matplotlib.pyplot as plt
 import networkx as nx
 import pygraphviz as pgv
-import matplotlib.pyplot as plt
 from networkx.drawing.nx_agraph import graphviz_layout
 
 """
@@ -19,18 +19,19 @@ from networkx.drawing.nx_agraph import graphviz_layout
  * @author ysig
 """
 
+
 class DocumentNGramGraph:
-    #n for the n-graph
+    # n for the n-graph
     _n = 3
-    #consider not having characters but lists of objects
+    # consider not having characters but lists of objects
     _Data = []
-    #data size build for reuse of len(data)
+    # data size build for reuse of len(data)
     _dSize = 0
-    #stores the ngram
+    # stores the ngram
     _ngram = []
-    #store the ngram graph
+    # store the ngram graph
     _Graph = None
-    #window for graph construction
+    # window for graph construction
     _Dwin = 2
     # a printing flag determining if the printing result will be stored on document or
     # be displayed on string
@@ -42,13 +43,13 @@ class DocumentNGramGraph:
     _maxW = 0
     _minW = float("inf")
     # initialization
-    def __init__(self, n=3, Dwin=2, Data = [], GPrintVerbose = True):
+    def __init__(self, n=3, Dwin=2, Data=[], GPrintVerbose=True):
         # data must be "listable"
         self._Dwin = abs(int(Dwin))
         self._n = abs(int(n))
         self.setData(Data)
         self._GPrintVerbose = GPrintVerbose
-        if(not (self._Data == [])):
+        if not (self._Data == []):
             _maxW = 0
             _minW = float("inf")
             self.buildGraph()
@@ -59,7 +60,7 @@ class DocumentNGramGraph:
     # and creates ngrams based on a given window
     # !notice: at this developmental stage the weighting method
     # may not be correct
-    def buildGraph(self,verbose = False, d=[]):
+    def buildGraph(self, verbose=False, d=[]):
         # set Data @class_var
         self.setData(d)
         Data = self._Data
@@ -70,26 +71,26 @@ class DocumentNGramGraph:
 
         win = self._Dwin
 
-        #init graph
+        # init graph
         # TODO: add clear function
         self._Graph = nx.DiGraph()
         self._edges = set()
 
-        o = min(self._Dwin,s)
-        if(o>=1):
+        o = min(self._Dwin, s)
+        if o >= 1:
             window = [ng[0]]
             # append the first full window
             # while adding the needed edges
-            for gram in ng[1:o + 1]:
+            for gram in ng[1 : o + 1]:
                 for w in window:
-                    self.addEdgeInc(gram,w)
+                    self.addEdgeInc(gram, w)
                 window.append(gram)
 
             # with full window span till
             # the end.
-            for gram in ng[o + 1:]:
+            for gram in ng[o + 1 :]:
                 for w in window:
-                    self.addEdgeInc(gram,w)
+                    self.addEdgeInc(gram, w)
                 window.pop(0)
                 window.append(gram)
 
@@ -98,25 +99,24 @@ class DocumentNGramGraph:
                 self.GraphDraw(self._GPrintVerbose)
         return self._Graph
 
-
     # add's an edge if it's non existent
     # if it is increments it's weight
     # !notice: reiweighting technique may be false
     # at this developmental stage
-    def addEdgeInc(self,a,b,w=1):
-        #A = repr(a)#str(a)
-        #B = repr(b)#str(b)
-        #merging can also be done in other ways
-        #add an extra class variable
-        A = ''.join(a)
-        B = ''.join(b)
-        if (A,B) in self._edges:
+    def addEdgeInc(self, a, b, w=1):
+        # A = repr(a)#str(a)
+        # B = repr(b)#str(b)
+        # merging can also be done in other ways
+        # add an extra class variable
+        A = "".join(a)
+        B = "".join(b)
+        if (A, B) in self._edges:
             edata = self._Graph.get_edge_data(A, B)
             # DEBUG LINES
             # print "updating edge between (",A,B,")"
             # print "to weight",(edata['weight']+1)
 
-            r = edata['weight']+w
+            r = edata["weight"] + w
         else:
             # DEBUG LINES
             # print "adding edge between (",A,B,")"
@@ -125,16 +125,15 @@ class DocumentNGramGraph:
         # update/add edge weight
         self.setEdge(A, B, r)
 
-
     # creates ngram's of window based on @param n
-    def build_ngram(self,d = []):
+    def build_ngram(self, d=[]):
         self.setData(d)
         Data = self._Data
-        l = Data[0:min(self._n,self._dSize)]
+        l = Data[0 : min(self._n, self._dSize)]
         q = []
         q.append(l[:])
-        if(self._n<self._dSize):
-            for d in Data[min(self._n,self._dSize):]:
+        if self._n < self._dSize:
+            for d in Data[min(self._n, self._dSize) :]:
                 l.pop(0)
                 l.append(d)
                 q.append(l[:])
@@ -142,52 +141,60 @@ class DocumentNGramGraph:
         return q
 
     # draws a graph using math plot lib
-    def GraphDraw(self, verbose = True, print_name = 'graph', lf = True, ns = 1000, wf= True):
+    def GraphDraw(self, verbose=True, print_name="graph", lf=True, ns=1000, wf=True):
         pos = graphviz_layout(self._Graph)
         # pos = sring_layout(self._Graph, scale=1)
         # nx.draw(self._Graph,pos = pos,node_size=ns,with_labels = lf, node_color = 'm')
-        nx.draw(self._Graph, pos=graphviz_layout(self._Graph, prog='dot'), node_size=ns, cmap=plt.cm.Blues, node_color=list(range(len(self._Graph))), with_labels = lf)
+        nx.draw(
+            self._Graph,
+            pos=graphviz_layout(self._Graph, prog="dot"),
+            node_size=ns,
+            cmap=plt.cm.Blues,
+            node_color=list(range(len(self._Graph))),
+            with_labels=lf,
+        )
         if wf:
-            weight_labels = nx.get_edge_attributes(self._Graph,'weight')
-            nx.draw_networkx_edge_labels(self._Graph,pos = pos,edge_labels = weight_labels)
+            weight_labels = nx.get_edge_attributes(self._Graph, "weight")
+            nx.draw_networkx_edge_labels(
+                self._Graph, pos=pos, edge_labels=weight_labels
+            )
         if verbose:
             plt.show()
         else:
             # plt.savefig('g.png')
             # or to dot
-            nx.drawing.nx_pydot.write_dot(self._Graph,print_name+'.dot')
+            nx.drawing.nx_pydot.write_dot(self._Graph, print_name + ".dot")
             # !!Uknown error: the produced dot file is
             # not readable by dot/xdot.
 
     ## set functions for structure's protected fields
 
-    def setData(self,Data):
-        if not(Data == []):
+    def setData(self, Data):
+        if not (Data == []):
             self._Data = list(Data)
             self._dSize = len(self._Data)
 
     # sets an edges weight
-    def setEdge(self,a,b,w=1):
+    def setEdge(self, a, b, w=1):
         self._edges.add((a, b))  # Update cache
-        self._Graph.add_edge(a, b, key='edge', weight=w)
+        self._Graph.add_edge(a, b, key="edge", weight=w)
 
-        self._maxW = max(self._maxW,w)
-        self._minW = min(self._minW,w)
+        self._maxW = max(self._maxW, w)
+        self._minW = min(self._minW, w)
 
-	# deletes
-    def delEdge(self,u,v):
-        self._edges.remove((u,v))
-        self._Graph.remove_edge(u,v)
+    # deletes
+    def delEdge(self, u, v):
+        self._edges.remove((u, v))
+        self._Graph.remove_edge(u, v)
 
-
-	# trims the graph by removing unreached nodes
+    # trims the graph by removing unreached nodes
     def deleteUnreachedNodes(self):
         self._Graph.remove_nodes_from(nx.isolates(self._Graph))
 
-    def setN(self,n):
-        self._n=n
+    def setN(self, n):
+        self._n = n
 
-    def setDwin(self,win):
+    def setDwin(self, win):
         self._Dwin = win
 
     def size(self):
@@ -211,7 +218,9 @@ class DocumentNGramGraph:
 
     def number_of_edges(self):
         return self._Graph.number_of_nodes()
-#test script
 
-#1. construct a 2-gram graph of window_size = 2
+
+# test script
+
+# 1. construct a 2-gram graph of window_size = 2
 #   from the word "abcdef"

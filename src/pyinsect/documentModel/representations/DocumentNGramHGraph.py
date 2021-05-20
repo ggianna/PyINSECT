@@ -1,6 +1,6 @@
 import networkx as nx
-from pyinsect.documentModel.representations.DocumentNGramGraph import \
-    DocumentNGramGraph
+
+from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
 
 
 class DocumentNGramHSubGraph(DocumentNGramGraph):
@@ -12,6 +12,7 @@ class DocumentNGramHSubGraph(DocumentNGramGraph):
     `DocumentNGramHSubGraph`, whose s-neighborhoods are this graph's
     symbols.
     """
+
     def __init__(self, n=3, Dwin=2, Data=[], GPrintVerbose=True, child=None):
         """
         Create a `DocumentNGramHSubGraph` object.
@@ -79,6 +80,7 @@ class DocumentNGramHGraph(DocumentNGramHSubGraph):
     `Hierarchical Proximity Graph`. It consists of a
     hierarchy of linked `DocumentNGramHSubGraph`s.
     """
+
     def __init__(self, levels, n=3, Dwin=2, Data=[], GPrintVerbose=True):
         """Create a `DocumentNGramHGraph` object.
 
