@@ -105,8 +105,8 @@ class DocumentNGramGraph:
         # B = repr(b)#str(b)
         # merging can also be done in other ways
         # add an extra class variable
-        A = "".join(a)
-        B = "".join(b)
+        A = tuple(a)
+        B = tuple(b)
         if (A, B) in self._edges:
             edata = self._Graph.get_edge_data(A, B)
             # DEBUG LINES
