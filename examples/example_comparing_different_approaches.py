@@ -1,6 +1,6 @@
 from pyinsect.documentModel import representations as NGG
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     n = 3
     Dwin = 2
     text = "GATTACATTAG"
