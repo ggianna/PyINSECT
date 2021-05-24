@@ -66,4 +66,4 @@ class ArrayGraph2D(ArrayGraph):
                     neighbor = self._data[neighbor_y][neighbor_x]
                     self._graph.addEdgeInc((str(current),), (str(neighbor),))
 
-        return self.as_graph
+        return self._graph
