@@ -21,37 +21,36 @@ from networkx.drawing.nx_agraph import graphviz_layout
 
 
 class DocumentNGramGraph:
-    # n for the n-graph
-    _n = 3
-    # consider not having characters but lists of objects
-    _Data = []
-    # data size build for reuse of len(data)
-    _dSize = 0
-    # stores the ngram
-    _ngram = []
-    # store the ngram graph
-    _Graph = None
-    # window for graph construction
-    _Dwin = 2
-    # a printing flag determining if the printing result will be stored on document or
-    # be displayed on string
-    _GPrintVerbose = True
-    # cache of edges (set vs. list)
-    _edges = set()
-
-    # the graph stores it's maximum and minimum weigh
-    _maxW = 0
-    _minW = float("inf")
     # initialization
     def __init__(self, n=3, Dwin=2, Data=[], GPrintVerbose=True):
+        # consider not having characters but lists of objects
+        self._Data = []
+
+        # data size build for reuse of len(data)
+        self._dSize = 0
+
+        # stores the ngram
+        self._ngram = []
+
+        # store the ngram graph
+        self._Graph = nx.DiGraph()
+
+        # cache of edges (set vs. list)
+        self._edges = set()
+
+        # the graph stores it's maximum and minimum weigh
+        self._maxW = 0
+        self._minW = float("inf")
+
         # data must be "listable"
         self._Dwin = abs(int(Dwin))
+        # n for the n-graph
         self._n = abs(int(n))
         self.setData(Data)
+        # a printing flag determining if the printing result will be stored on document or
+        # be displayed on string
         self._GPrintVerbose = GPrintVerbose
         if not (self._Data == []):
-            _maxW = 0
-            _minW = float("inf")
             self.buildGraph()
 
     # we will now define @method buildGraph
@@ -73,8 +72,6 @@ class DocumentNGramGraph:
 
         # init graph
         # TODO: add clear function
-        self._Graph = nx.DiGraph()
-        self._edges = set()
 
         o = min(self._Dwin, s)
         if o >= 1:
