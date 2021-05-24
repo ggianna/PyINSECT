@@ -1,8 +1,8 @@
 import unittest
 
-from src.pyinsect.documentModel.comparators.NGramGraphSimilarity import SimilarityNVS
-from src.pyinsect.documentModel.representations import DocumentNGramGraph
-from src.pyinsect.indexing.graph_index import GraphIndex
+from pyinsect.documentModel.comparators.NGramGraphSimilarity import SimilarityNVS
+from pyinsect.documentModel.representations import DocumentNGramGraph
+from pyinsect.indexing.graph_index import GraphIndex
 
 
 class GraphIndexTestCase(unittest.TestCase):

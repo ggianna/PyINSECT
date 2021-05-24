@@ -1,5 +1,5 @@
-from src.pyinsect.documentModel.comparators.Operator import Union
-from src.pyinsect.documentModel.comparators.Operator import (
+from pyinsect.documentModel.comparators.Operator import Union
+from pyinsect.documentModel.comparators.Operator import (
     inverse_intersection as AllNotIn,
 )
 
