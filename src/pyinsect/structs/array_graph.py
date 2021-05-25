@@ -52,25 +52,27 @@ class ArrayGraph2D(ArrayGraph):
 
         return index_min, index_max
 
-    def _process_patch(self, x, y):
+    def _process_patch(self, current_y, current_x):
         neighbors = []
 
-        for neighbor_y in range(*self._get_window(y), self._stride):
-            for neighbor_x in range(*self._get_window(x), self._stride):
-                if neighbor_x != x and neighbor_y != y:
-                    neighbors.append((neighbor_y, neighbor_x))
+        for neighbor_y in range(*self._get_window(current_y), self._stride):
+            for neighbor_x in range(*self._get_window(current_x), self._stride):
+                if neighbor_x != current_x and neighbor_y != current_y:
+                    neighbors.append(
+                        (
+                            self._data[current_y][current_x],
+                            self._data[neighbor_y][neighbor_x],
+                        )
+                    )
 
         return neighbors
 
     def as_graph(self, graph_type, *args, **kwargs):
         self._graph = graph_type(*args, **kwargs)
-        self._graph._Graph = networkx.DiGraph()
 
         for y in range(len(self._data)):
             for x in range(len(self._data)):
-                current = self._data[y][x]
-                for neighbor_y, neighbor_x in self._process_patch(x, y):
-                    neighbor = self._data[neighbor_y][neighbor_x]
-                    self._graph.addEdgeInc((str(current),), (str(neighbor),))
+                for vertex_a, vertex_b in self._process_patch(y, x):
+                    self._graph.addEdgeInc((vertex_a,), (vertex_b,))
 
         return self._graph
