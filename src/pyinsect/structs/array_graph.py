@@ -17,7 +17,7 @@ class ArrayGraph(ABC):
             return 0
 
     def __str__(self):
-        return "length: {0}, window: {1}".format(len(self), self._window_size)
+        return "length: {0}, window size: {1}".format(len(self), self._window_size)
 
     def __repr__(self) -> str:
         return '<{0} "{1}">'.format(self.__class__.__name__, str(self))
