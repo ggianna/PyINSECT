@@ -53,8 +53,8 @@ class ArrayGraph2D(ArrayGraph):
     def _fetch_neighbors(self, current_y, current_x):
         neighbors = []
 
-        for neighbor_y in range(*self._get_window(current_y), self._stride):
-            for neighbor_x in range(*self._get_window(current_x), self._stride):
+        for neighbor_y in range(*self._get_window(current_y)):
+            for neighbor_x in range(*self._get_window(current_x)):
                 if neighbor_x != current_x and neighbor_y != current_y:
                     neighbors.append(self._data[neighbor_y][neighbor_x])
 
@@ -69,8 +69,8 @@ class ArrayGraph2D(ArrayGraph):
     def as_graph(self, graph_type, *args, **kwargs):
         self._graph = graph_type(*args, **kwargs)
 
-        for y in range(len(self._data)):
-            for x in range(len(self._data)):
+        for y in range(0, len(self._data), self._stride):
+            for x in range(0, len(self._data), self._stride):
                 for vertex_a, vertex_b in self._process_patch(y, x):
                     self._graph.addEdgeInc((vertex_a,), (vertex_b,))
 
