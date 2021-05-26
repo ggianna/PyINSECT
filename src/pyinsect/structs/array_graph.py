@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
 
-import networkx
-
 
 class ArrayGraph(ABC):
     def __init__(self, data, window_size, stride=1) -> None:
