@@ -4,9 +4,19 @@ import random
 import string
 import unittest
 
-from pyinsect.documentModel import comparators as CMP
-from pyinsect.documentModel import representations as NGG
+from pyinsect.documentModel.comparators import SimilarityHPG, SimilarityVS
+from pyinsect.documentModel.representations import (
+    DocumentNGramGraph,
+    DocumentNGramHGraph2D,
+)
 
+
+def generate_random_2d_int_array(size):
+    return [
+        [
+            ord(random.choice(string.ascii_letters)) for y in range(size)
+        ] for x in range(size)
+    ]
 
 class DocumentNGramHGraphTestCase(unittest.TestCase):
     logger = logging.getLogger(__name__)
@@ -18,30 +28,41 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
     def setUp(self):
         random.seed(1234)
 
-        self.text = "".join(random.choice(string.ascii_letters) for _ in range(5))
+        self.data = generate_random_2d_int_array(5)
 
-        self.metric = CMP.SimilarityVSHPG()
+        self.array_graph_metric = SimilarityVS()
+        self.hpg_metric = SimilarityHPG(SimilarityVS)
 
     def test_same_similarity(self):
-        ngg1 = NGG.DocumentNGramHGraph(2, 3, 2, self.text)
-        ngg2 = NGG.DocumentNGramHGraph(2, 3, 2, self.text)
+        graph1 = DocumentNGramHGraph2D(self.data, 3, 3, self.array_graph_metric).as_graph(
+            DocumentNGramGraph
+        )
 
-        value = self.metric.apply(ngg1, ngg2)
+        graph2 = DocumentNGramHGraph2D(self.data, 3, 3, self.array_graph_metric).as_graph(
+            DocumentNGramGraph
+        )
+
+        value = self.hpg_metric.apply(graph1, graph2)
 
         self.assertEqual(value, 1.0)
 
     def test_diff_similarity(self):
-        for permutation in itertools.permutations(self.text):
-            if permutation == tuple(self.text):
+        for permutation in itertools.permutations(self.data):
+            if permutation == tuple(self.data):
                 continue
 
             with self.subTest(permutation=permutation):
-                ngg1 = NGG.DocumentNGramHGraph(2, 3, 2, permutation)
-                ngg2 = NGG.DocumentNGramHGraph(2, 3, 2, self.text)
+                graph1 = DocumentNGramHGraph2D(
+                    permutation, 3, 3, self.array_graph_metric
+                ).as_graph(DocumentNGramGraph)
 
-                value = self.metric.apply(ngg1, ngg2)
+                graph2 = DocumentNGramHGraph2D(
+                    self.data, 3, 3, self.array_graph_metric
+                ).as_graph(DocumentNGramGraph)
 
-                self.logger.debug("%s %s %4.3f", self.text, "".join(permutation), value)
+                value = self.hpg_metric.apply(graph1, graph2)
+
+                self.logger.debug("%s %s %4.3f", self.data, permutation, value)
 
                 self.assertNotEqual(value, 1.0)
 
@@ -49,14 +70,19 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
         length1 = random.randint(1, len(string.ascii_letters))
         length2 = random.randint(1, len(string.ascii_letters))
 
-        text1 = "".join(random.choice(string.ascii_letters) for _ in range(length1))
-        text2 = "".join(random.choice(string.ascii_letters) for _ in range(length2))
+        data1 = generate_random_2d_int_array(length1)
+        data2 = generate_random_2d_int_array(length2)
 
-        ngg1 = NGG.DocumentNGramHGraph(2, 3, 2, text1)
-        ngg2 = NGG.DocumentNGramHGraph(2, 3, 2, text2)
+        graph1 = DocumentNGramHGraph2D(data1, 3, 3, self.array_graph_metric).as_graph(
+            DocumentNGramGraph
+        )
 
-        value1 = self.metric.apply(ngg1, ngg2)
-        value2 = self.metric.apply(ngg2, ngg1)
+        graph2 = DocumentNGramHGraph2D(data2, 3, 3, self.array_graph_metric).as_graph(
+            DocumentNGramGraph
+        )
+
+        value1 = self.hpg_metric.apply(graph1, graph2)
+        value2 = self.hpg_metric.apply(graph2, graph1)
 
         self.assertEqual(value1, value2)
 
@@ -65,28 +91,32 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
             length1 = random.randint(1, len(string.ascii_letters))
             length2 = random.randint(1, len(string.ascii_letters))
 
-            text1 = "".join(random.choice(string.ascii_letters) for _ in range(length1))
-            text2 = "".join(random.choice(string.ascii_letters) for _ in range(length2))
+            data1 = generate_random_2d_int_array(length1)
+            data2 = generate_random_2d_int_array(length2)
 
-            levels1, n1, Dwin1 = (
-                random.randint(1, 10),
+            levels1, Dwin1 = (
                 random.randint(1, 10),
                 random.randint(1, 10),
             )
-            levels2, n2, Dwin2 = (
-                random.randint(1, 10),
+
+            levels2, Dwin2 = (
                 random.randint(1, 10),
                 random.randint(1, 10),
             )
 
             with self.subTest(
-                config1=(levels1, n1, Dwin1, text1), config2=(levels2, n2, Dwin2, text2)
+                config1=(levels1, Dwin1, data1), config2=(levels2, Dwin2, data2)
             ):
-                ngg1 = NGG.DocumentNGramHGraph(levels1, n1, Dwin1, text1)
-                ngg2 = NGG.DocumentNGramHGraph(levels2, n2, Dwin2, text2)
+                graph1 = DocumentNGramHGraph2D(
+                    data1, Dwin1, levels1, self.array_graph_metric
+                ).as_graph(DocumentNGramGraph)
 
-                value = self.metric.apply(ngg1, ngg2)
+                graph2 = DocumentNGramHGraph2D(
+                    data2, Dwin2, levels2, self.array_graph_metric
+                ).as_graph(DocumentNGramGraph)
 
-                self.logger.debug("%s %s %4.3f", text1, text2, value)
+                value = self.hpg_metric.apply(graph1, graph2)
+
+                self.logger.debug("%s %s %4.3f", data1, data2, value)
 
                 self.assertTrue(0.0 <= value <= 1.0)

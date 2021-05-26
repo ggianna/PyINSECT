@@ -1,9 +1,9 @@
 from pyinsect.documentModel.comparators.NGramGraphSimilarity import (
     Similarity,
+    SimilarityHPG,
     SimilarityNVS,
     SimilaritySS,
     SimilarityVS,
-    SimilarityVSHPG,
 )
 from pyinsect.documentModel.comparators.Operator import (
     BinaryOperator,

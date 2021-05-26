@@ -149,8 +149,8 @@ class SimilarityNVS(Similarity):
             return 0.0
 
 
-class SimilarityVSHPG(SimilarityVS):
-    """A custom `SimilarityVS` metric tailored to the complexities
+class SimilarityHPG(Similarity):
+    """A custom `Similarity` metric tailored to the complexities
     of Hierarchical Proximity Graphs (HPG - `DocumentNGramHGraph`).
 
     Given two HPGs, the `Value Similarity` of every sub-graph pair is computed,
@@ -158,16 +158,33 @@ class SimilarityVSHPG(SimilarityVS):
     the HPGs Value Similarity.
     """
 
-    def getSimilarityDouble(self, ngg1, ngg2):
-        current_1, current_2, level, rv = ngg1, ngg2, 1, 0
+    def __init__(
+        self, per_level_similarity_metric_type, commutative=True, distributional=False
+    ):
+        super().__init__(commutative=commutative, distributional=distributional)
 
-        while current_1 is not None and current_2 is not None:
-            similarity = super().getSimilarityDouble(current_1, current_2)
-            rv += level * similarity
+        self._per_level_similarity_metric = per_level_similarity_metric_type(
+            commutative=commutative, distributional=distributional
+        )
 
-            current_1 = current_1.child
-            current_2 = current_2.child
+    def getSimilarityDouble(self, document_n_gram_h_graph1, document_n_gram_h_graph2):
+        if not document_n_gram_h_graph1 and not document_n_gram_h_graph2:
+            return 1
 
-            level += 1
+        if not document_n_gram_h_graph1 or not document_n_gram_h_graph2:
+            return 0
 
-        return rv / reduce(lambda x, y: x + y, range(1, level))
+        similarity = 0
+
+        for level, (current_1, current_2) in enumerate(
+            zip(document_n_gram_h_graph1, document_n_gram_h_graph2), start=1
+        ):
+            current_lvl_similarity = (
+                self._per_level_similarity_metric.getSimilarityDouble(
+                    current_1, current_2
+                )
+            )
+
+            similarity += level * current_lvl_similarity
+
+        return similarity / reduce(lambda x, y: x + y, range(1, level))
