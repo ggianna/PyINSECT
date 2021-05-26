@@ -61,17 +61,19 @@ class ArrayGraph2D(ArrayGraph):
         return neighbors
 
     def _process_patch(self, current_y, current_x):
-        return map(
+        edges = map(
             lambda neighbor: (self._data[current_y][current_x], neighbor),
             self._fetch_neighbors(current_y, current_x),
         )
+
+        for vertex_a, vertex_b in edges:
+            self._graph.addEdgeInc((vertex_a,), (vertex_b,))
 
     def as_graph(self, graph_type, *args, **kwargs):
         self._graph = graph_type(*args, **kwargs)
 
         for y in range(0, len(self._data), self._stride):
             for x in range(0, len(self._data), self._stride):
-                for vertex_a, vertex_b in self._process_patch(y, x):
-                    self._graph.addEdgeInc((vertex_a,), (vertex_b,))
+                self._process_patch(y, x)
 
         return self._graph
