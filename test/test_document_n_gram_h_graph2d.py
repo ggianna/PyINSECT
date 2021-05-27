@@ -35,7 +35,7 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
             self.data, 3, 3, self.array_graph_metric
         ).as_graph(DocumentNGramGraph)
 
-        value = self.hpg_metric.apply(graph1, graph2)
+        value = self.hpg_metric(graph1, graph2)
 
         self.assertEqual(value, 1.0)
 
@@ -57,7 +57,7 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
                     self.data, 3, 3, self.array_graph_metric
                 ).as_graph(DocumentNGramGraph)
 
-                value = self.hpg_metric.apply(graph1, graph2)
+                value = self.hpg_metric(graph1, graph2)
 
                 self.assertNotEqual(value, 1.0)
 
@@ -73,8 +73,8 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
             DocumentNGramGraph
         )
 
-        value1 = self.hpg_metric.apply(graph1, graph2)
-        value2 = self.hpg_metric.apply(graph2, graph1)
+        value1 = self.hpg_metric(graph1, graph2)
+        value2 = self.hpg_metric(graph2, graph1)
 
         self.assertEqual(value1, value2)
 
@@ -112,7 +112,7 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
                     data2, Dwin2, levels2, self.array_graph_metric
                 ).as_graph(DocumentNGramGraph)
 
-                value = self.hpg_metric.apply(graph1, graph2)
+                value = self.hpg_metric(graph1, graph2)
 
                 self.assertTrue(0.0 <= value <= 1.0)
 

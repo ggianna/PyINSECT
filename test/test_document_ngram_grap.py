@@ -21,7 +21,7 @@ class DocumentNGramGraphTestCase(unittest.TestCase):
 
         self.assertAlmostEqual(self.gs.getSimilarityFromComponents(sc), 0.83, 2)
 
-        self.assertAlmostEqual(self.gs.apply(self.ngg1, self.ngg2), 0.83, 2)
+        self.assertAlmostEqual(self.gs(self.ngg1, self.ngg2), 0.83, 2)
 
     def test_union(self):
         self.bop.apply(self.ngg1, self.ngg2)

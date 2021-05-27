@@ -43,6 +43,9 @@ class Similarity(BinaryOperator):
     def apply(self, *args, **kwargs):
         return self.getSimilarityDouble(*args)
 
+    def __call__(self, *args, **kwargs):
+        return self.apply(*args, **kwargs)
+
 
 class SimilaritySS(Similarity):
 
