@@ -10,46 +10,43 @@ from pyinsect.documentModel.representations import (
     DocumentNGramHGraph2D,
 )
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    format="%(levelname)s: %(message)s",
+    level=logging.DEBUG,
+)
 
-def generate_random_2d_int_array(size):
-    return [
-        [
-            ord(random.choice(string.ascii_letters)) for y in range(size)
-        ] for x in range(size)
-    ]
 
 class DocumentNGramHGraphTestCase(unittest.TestCase):
-    logger = logging.getLogger(__name__)
-    logging.basicConfig(
-        format="%(levelname)s: %(message)s",
-        level=logging.DEBUG,
-    )
-
     def setUp(self):
         random.seed(1234)
 
-        self.data = generate_random_2d_int_array(5)
+        self.data = self.generate_random_2d_int_array(5)
 
         self.array_graph_metric = SimilarityVS()
         self.hpg_metric = SimilarityHPG(SimilarityVS)
 
     def test_same_similarity(self):
-        graph1 = DocumentNGramHGraph2D(self.data, 3, 3, self.array_graph_metric).as_graph(
-            DocumentNGramGraph
-        )
+        graph1 = DocumentNGramHGraph2D(
+            self.data, 3, 3, self.array_graph_metric
+        ).as_graph(DocumentNGramGraph)
 
-        graph2 = DocumentNGramHGraph2D(self.data, 3, 3, self.array_graph_metric).as_graph(
-            DocumentNGramGraph
-        )
+        graph2 = DocumentNGramHGraph2D(
+            self.data, 3, 3, self.array_graph_metric
+        ).as_graph(DocumentNGramGraph)
 
         value = self.hpg_metric.apply(graph1, graph2)
 
         self.assertEqual(value, 1.0)
 
     def test_diff_similarity(self):
-        for permutation in itertools.permutations(self.data):
+        for permutation_index, permutation in enumerate(
+            itertools.permutations(self.data)
+        ):
             if permutation == tuple(self.data):
                 continue
+
+            logger.info("Permutation: %02d", permutation_index)
 
             with self.subTest(permutation=permutation):
                 graph1 = DocumentNGramHGraph2D(
@@ -62,16 +59,11 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
 
                 value = self.hpg_metric.apply(graph1, graph2)
 
-                self.logger.debug("%s %s %4.3f", self.data, permutation, value)
-
                 self.assertNotEqual(value, 1.0)
 
     def test_commutativity(self):
-        length1 = random.randint(1, len(string.ascii_letters))
-        length2 = random.randint(1, len(string.ascii_letters))
-
-        data1 = generate_random_2d_int_array(length1)
-        data2 = generate_random_2d_int_array(length2)
+        data1 = self.generate_random_2d_int_array(5)
+        data2 = self.generate_random_2d_int_array(5)
 
         graph1 = DocumentNGramHGraph2D(data1, 3, 3, self.array_graph_metric).as_graph(
             DocumentNGramGraph
@@ -87,22 +79,27 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
         self.assertEqual(value1, value2)
 
     def test_combinations(self):
-        for _ in range(10):
-            length1 = random.randint(1, len(string.ascii_letters))
-            length2 = random.randint(1, len(string.ascii_letters))
+        for combination_index in range(10):
+            logger.info("Combination: %02d", combination_index)
 
-            data1 = generate_random_2d_int_array(length1)
-            data2 = generate_random_2d_int_array(length2)
+            length1 = random.randint(1, 5)
+            length2 = random.randint(1, 5)
+
+            data1 = self.generate_random_2d_int_array(length1)
+            data2 = self.generate_random_2d_int_array(length2)
 
             levels1, Dwin1 = (
-                random.randint(1, 10),
+                random.randint(1, 4),
                 random.randint(1, 10),
             )
 
             levels2, Dwin2 = (
-                random.randint(1, 10),
+                random.randint(1, 4),
                 random.randint(1, 10),
             )
+
+            logger.info("Configuration #1: (%02d, %02d)", levels1, Dwin1)
+            logger.info("Configuration #2: (%02d, %02d)", levels2, Dwin2)
 
             with self.subTest(
                 config1=(levels1, Dwin1, data1), config2=(levels2, Dwin2, data2)
@@ -117,6 +114,11 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
 
                 value = self.hpg_metric.apply(graph1, graph2)
 
-                self.logger.debug("%s %s %4.3f", data1, data2, value)
-
                 self.assertTrue(0.0 <= value <= 1.0)
+
+    @classmethod
+    def generate_random_2d_int_array(cls, size):
+        return [
+            [ord(random.choice(string.ascii_letters)) for _ in range(size)]
+            for _ in range(size)
+        ]
