@@ -111,6 +111,11 @@ class DocumentNGramHGraph2D(DocumentNGramHGraph):
         self._graphs_per_level.append(initial_graph)
 
         for lvl in range(1, self._number_of_levels + 1):
+            # FIXME: Shouldn't lvl start from 2 due to
+            # `initial_graph` being the 1st level
+            # Check window_size as well as similarity calculation
+            # implications of the above
+
             logger.debug("Level: %02d", lvl)
 
             current_lvl_window_size = self._window_size * lvl

@@ -190,4 +190,4 @@ class SimilarityHPG(Similarity):
 
             similarity += level * current_lvl_similarity
 
-        return similarity / reduce(lambda x, y: x + y, range(1, level))
+        return similarity / reduce(lambda x, y: x + y, range(1, level + 1))
