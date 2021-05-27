@@ -1,8 +1,15 @@
+import logging
 import math
 from abc import ABC, abstractmethod
 
 from pyinsect.indexing.graph_index import GraphIndex
 from pyinsect.structs.array_graph import ArrayGraph2D
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    format="%(levelname)s: %(message)s",
+    level=logging.DEBUG,
+)
 
 
 class DocumentNGramHGraph(ABC):
@@ -92,7 +99,8 @@ class DocumentNGramHGraph2D(DocumentNGramHGraph):
         x_min, x_max = cls._get_window(matrix, window_size, current_x)
 
         return [
-            [x for x in submatrix[x_min:x_max]] for submatrix in matrix[y_min:y_max]
+            [value for value in submatrix[x_min:x_max]]
+            for submatrix in matrix[y_min:y_max]
         ]
 
     def as_graph(self, graph_type, *args, **kwargs):
@@ -103,6 +111,8 @@ class DocumentNGramHGraph2D(DocumentNGramHGraph):
         self._graphs_per_level.append(initial_graph)
 
         for lvl in range(1, self._number_of_levels + 1):
+            logger.debug("Level: %02d", lvl)
+
             current_lvl_window_size = self._window_size * lvl
 
             previous_lvl_data = self._data_per_lvl[-1]
@@ -110,10 +120,15 @@ class DocumentNGramHGraph2D(DocumentNGramHGraph):
             number_of_neighborhoods = math.ceil(len(previous_lvl_data) / self._stride)
 
             current_lvl_data = [[0] * number_of_neighborhoods] * number_of_neighborhoods
-            for y in range(0, len(previous_lvl_data), self._stride):
-                for x in range(0, len(previous_lvl_data), self._stride):
+
+            for current_y in range(0, len(previous_lvl_data), self._stride):
+                logger.debug("Current row: %02d", current_y)
+
+                for current_x in range(0, len(previous_lvl_data), self._stride):
+                    logger.debug("Current column: %02d", current_x)
+
                     patch = self._get_patch(
-                        previous_lvl_data, current_lvl_window_size, y, x
+                        previous_lvl_data, current_lvl_window_size, current_y, current_x
                     )
 
                     neighborhood = ArrayGraph2D(
@@ -122,7 +137,7 @@ class DocumentNGramHGraph2D(DocumentNGramHGraph):
 
                     neighborhood_symbol = self._graph_indices[lvl - 1][neighborhood]
 
-                    current_lvl_data[y][x] = neighborhood_symbol
+                    current_lvl_data[current_y][current_x] = neighborhood_symbol
 
             self._data_per_lvl.append(current_lvl_data)
 
