@@ -11,7 +11,7 @@ class ArrayGraph(ABC):
 
     def __len__(self):
         try:
-            return self._graph.size()
+            return len(self._graph)
         except AttributeError:
             return 0
 

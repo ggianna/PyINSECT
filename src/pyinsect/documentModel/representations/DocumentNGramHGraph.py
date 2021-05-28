@@ -44,7 +44,7 @@ class DocumentNGramHGraph(ABC):
     def __len__(self):
         size = 0
         for graph in self._graphs_per_level:
-            size += graph.size()
+            size += len(graph)
 
         return size
 
