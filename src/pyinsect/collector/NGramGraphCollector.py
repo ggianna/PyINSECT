@@ -1,133 +1,101 @@
-"""
- An n-gram graph collector, which can create representative graphs of text/graph sets
- and can calculate appropriateness (essentially the similarity) of a text, with respect
- to the representative graph.
+from abc import ABC, abstractmethod
 
- @author ggianna
-"""
-
-import random
-import time
-from abc import ABC, abstractclassmethod
-
-from pyinsect.documentModel.comparators.NGramGraphSimilarity import SimilarityNVS
+from pyinsect.documentModel.comparators.NGramGraphSimilarity import (
+    SimilarityHPG,
+    SimilarityNVS,
+    SimilarityVS,
+)
 from pyinsect.documentModel.comparators.Operator import Union
 from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
+from pyinsect.documentModel.representations.DocumentNGramHGraph import (
+    DocumentNGramHGraph2D,
+)
 
 
 class GraphCollector(ABC):
-    def __init__(self):
-        self._iDocs = 0.0
-        self._gOverallGraph = None
-
-    @abstractclassmethod
-    def construct_graph(cls, *args, **kwargs):
-        raise NotImplementedError
-
     """
-        Adds the graph of the input text to the representative graph.
+    An n-gram graph collector, which can create representative graphs of text/graph sets
+    and can calculate appropriateness (essentially the similarity) of a text, with respect
+    to the representative graph.
     """
 
-    def addText(self, sText, bDeepCopy=False, n=3, Dwin=3):
-        ngg1 = self.construct_graph(n, Dwin, sText)
-        self.addGraph(ngg1, bDeepCopy)
+    def __init__(self, similarity_metric):
+        self._number_of_docs = 0
+        self._representative_graph = None
 
-    """
-        Adds the graph input to the representative graph.
-    """
+        self._similarity_metric = similarity_metric
 
-    def addGraph(self, gNewGraph, bDeepCopy=False):  # Do NOT use deep copy by default
-        if self._iDocs == 0:
-            self._gOverallGraph = gNewGraph
+    def __len__(self):
+        return self._number_of_docs
+
+    def __str__(self):
+        return "number of documents: {0}, similarity metric: {1}".format(
+            self._number_of_docs, self._similarity_metric.__class__.__name__
+        )
+
+    def __repr__(self):
+        return '<{0} "{1}">'.format(self.__class__.__name__, str(self))
+
+    @property
+    def representative_graph(self):
+        return self._representative_graph
+
+    def _add_graph(self, graph, deep_copy=False):
+        """Adds the graph input to the representative graph."""
+
+        if self._number_of_docs == 0:
+            self._representative_graph = graph
         else:
             bop = Union(
-                lf=1.0 / (self._iDocs + 1.0), commutative=True, distributional=True
+                lf=1 / (self._number_of_docs + 1), commutative=True, distributional=True
             )
-            self._gOverallGraph = bop.apply(
-                self._gOverallGraph, gNewGraph, dc=bDeepCopy
+
+            self._representative_graph = bop.apply(
+                self._representative_graph, graph, dc=deep_copy
             )
-        # Added a doc
-        self._iDocs += 1
 
-    """
-        Returns a degree of ''appropriateness'' of a text, given the representative graph.
-        Essentially it calculates the Normalized Value Similarity of the text to the representative graph.
-    """
+        self._number_of_docs += 1
 
-    def getAppropriateness(self, sText, n=3, Dwin=3):
-        nggNew = self.construct_graph(n, Dwin, sText)
-        gs = SimilarityNVS()
-        return gs.getSimilarityDouble(nggNew, self._gOverallGraph)
-
-    """
-        Returns a degree of ''appropriateness'' of a graph, given the representative graph.
+    def _appropriateness_of_graph(self, graph):
+        """
+        Returns a degree of `appropriateness` of a graph, given the representative graph.
         Essentially it calculates the Normalized Value Similarity of the graph to the representative graph.
-    """
+        """
 
-    def getGraphAppropriateness(self, gGraph):
-        gs = SimilarityNVS()
-        return gs.getSimilarityDouble(gGraph, self._gOverallGraph)
+        # FIXME: In my humble opinion the logic of appropriateness calculation
+        # should be moved outside of the data collection module
 
-    """
-     Returns the representative graph of the collection input.
-    """
+        return self._similarity_metric(graph, self._representative_graph)
 
-    def getRepresentativeGraph(self):
-        return self._gOverallGraph
+    @abstractmethod
+    def add(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
+    def appropriateness_of(self, *args, **kwargs):
+        raise NotImplementedError
 
 
 class NGramGraphCollector(GraphCollector):
-    def construct_graph(cls, n, Dwin, sText, *args, **kwargs):
-        return DocumentNGramGraph(n, Dwin, sText)
+    def __init__(self):
+        super().__init__(SimilarityNVS())
 
+    def add(self, text, deep_copy=False, n=3, window_size=3):
+        """Adds the graph of the input text to the representative graph."""
 
-if __name__ == "__main__":
+        graph = DocumentNGramGraph(n, window_size, text)
 
-    def getRandomText(iSize):
-        # lCands = list("abcdefghijklmnopqrstuvwxyz" + "abcdefghijklmnopqrstuvwxyz".upper() + "1234567890!@#$%^&*()")
-        lCands = list("abcdef")
-        sRes = "".join([random.choice(lCands) for i in range(1, iSize)])
-        return sRes
+        self._add_graph(graph, deep_copy=deep_copy)
 
-    # Start test
-    import time
+    def appropriateness_of(self, text, n=3, window_size=3):
+        """
+        Returns a degree of `appropriateness` of a text, given the representative graph.
+        Essentially it calculates the Normalized Value Similarity of the text to the representative graph.
+        """
 
-    print("Initializing texts...")
-    lTexts = list()
-    for iCnt in range(0, 50):
-        # Select text size
-        iSize = random.randint(1000, 2000)
-        sText = getRandomText(iSize)
-        # Add to list
-        lTexts.append(sText)
-    print("Initializing texts... Done.")
+        # FIXME: In my humble opinion the logic of appropriateness calculation
+        # should be moved outside of the data collection module
 
-    print("Starting shallow...")
-    cNoDeep = NGramGraphCollector()
-    start = time.time()
-    lastStep = start
-    # No deep
-    iCnt = 0
-    for sText in lTexts:
-        cNoDeep.addText(sText)
-        iCnt += 1
-        if time.time() - lastStep > 1:
-            print("..." + str(iCnt))
-            lastStep = time.time()
+        graph = DocumentNGramGraph(n, window_size, text)
 
-    end = time.time()
-    print((end - start))
-    print("End shallow.")
-
-    # print "Starting deep..."
-    # cDeep = NGramGraphCollector()
-    # start = time.time()
-    # # Deep
-    # for sText in lTexts:
-    #     cDeep.addText(sText, True)
-    #     if (time.time() - lastStep > 1):
-    #         print "."
-    #         lastStep = time.time()
-    # end = time.time()
-    # print(end - start)
-    # print "End deep."
+        return self._appropriateness_of_graph(graph)

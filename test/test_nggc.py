@@ -19,11 +19,11 @@ class NGramGraphCollectorTestCase(unittest.TestCase):
         self.collector = NGramGraphCollector()
 
         for entry in self.train_data:
-            self.collector.addText(entry)
+            self.collector.add(entry)
 
-    def test_getAppropriateness(self):
+    def test_appropriateness_of(self):
         for entry, expected in self.test_data:
             with self.subTest(query=entry):
                 self.assertAlmostEqual(
-                    self.collector.getAppropriateness(entry), expected, places=3
+                    self.collector.appropriateness_of(entry), expected, places=3
                 )
