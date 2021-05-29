@@ -121,18 +121,32 @@ class DocumentNGramHGraph2D(DocumentNGramHGraph):
 
             previous_lvl_data = self._data_per_lvl[-1]
 
-            number_of_neighborhoods = len(range(0, len(previous_lvl_data), self._stride))
+            number_of_neighborhoods = len(
+                range(0, len(previous_lvl_data), self._stride)
+            )
+
+            # NOTE: Given a multi-level HPG and a `stride` > 1, `current_lvl_data` might end up
+            # being a singleton 2D list (for example [[0]]). As a result, no edges are
+            # going to be added to the current level graph.
+            # See `ArrayGraph.as_graph`, for a better understanding of the situation.
 
             current_lvl_data = [[0] * number_of_neighborhoods] * number_of_neighborhoods
 
-            for current_y, previous_y in enumerate(range(0, len(previous_lvl_data), self._stride)):
+            for current_y, previous_y in enumerate(
+                range(0, len(previous_lvl_data), self._stride)
+            ):
                 logger.debug("Current row: %02d", previous_y)
 
-                for current_x, previous_x in enumerate(range(0, len(previous_lvl_data[previous_y]), self._stride)):
+                for current_x, previous_x in enumerate(
+                    range(0, len(previous_lvl_data[previous_y]), self._stride)
+                ):
                     logger.debug("Current column: %02d", previous_x)
 
                     patch = self._get_patch(
-                        previous_lvl_data, current_lvl_window_size, previous_y, previous_x
+                        previous_lvl_data,
+                        current_lvl_window_size,
+                        previous_y,
+                        previous_x,
                     )
 
                     neighborhood = ArrayGraph2D(

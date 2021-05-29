@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 from pyinsect.documentModel.comparators.NGramGraphSimilarity import (
     SimilarityHPG,
     SimilarityNVS,
-    SimilarityVS,
 )
 from pyinsect.documentModel.comparators.Operator import Union
 from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
@@ -44,11 +43,17 @@ class GraphCollector(ABC):
         raise NotImplementedError
 
 
-class NGramGraphCollector(GraphCollector):
+class NGramGraphCollectorBase(GraphCollector):
     def __init__(
-        self, n=3, window_size=3, deep_copy=False, commutative=True, distributional=True
+        self,
+        similarity_metric,
+        n=3,
+        window_size=3,
+        deep_copy=False,
+        commutative=True,
+        distributional=True,
     ):
-        super().__init__(SimilarityNVS())
+        super().__init__(similarity_metric)
 
         self._deep_copy = deep_copy
         self._n = n
@@ -114,14 +119,28 @@ class NGramGraphCollector(GraphCollector):
         return self._similarity_metric(graph, self._representative_graph)
 
 
-class HierarchicalProximityGraph2DCollector(GraphCollector):
+class NGramGraphCollector(NGramGraphCollectorBase):
+    def __init__(
+        self, n=3, window_size=3, deep_copy=False, commutative=True, distributional=True
+    ):
+        super().__init__(
+            SimilarityNVS(),
+            n=n,
+            window_size=window_size,
+            deep_copy=deep_copy,
+            commutative=commutative,
+            distributional=distributional,
+        )
+
+
+class HPG2DCollectorBase(GraphCollector):
     def __init__(
         self,
         similarity_metric,
-        window_size,
-        number_of_levels,
         graph_type,
         *args,
+        window_size=3,
+        number_of_levels=3,
         minimum_merging_margin=0.8,
         maximum_merging_margin=0.9,
         stride=1,
@@ -159,7 +178,7 @@ class HierarchicalProximityGraph2DCollector(GraphCollector):
             self._similarity_metric,
             minimum_merging_margin=self._minimum_merging_margin,
             maximum_merging_margin=self._maximum_merging_margin,
-            stride=self.stride,
+            stride=self._stride,
         ).as_graph(self._graph_type, *self._per_graph_args, **self._per_graph_kwargs)
 
         self._add_graph(graph)
@@ -172,7 +191,7 @@ class HierarchicalProximityGraph2DCollector(GraphCollector):
             self._similarity_metric,
             minimum_merging_margin=self._minimum_merging_margin,
             maximum_merging_margin=self._maximum_merging_margin,
-            stride=self.stride,
+            stride=self._stride,
         ).as_graph(self._graph_type, *self._per_graph_args, **self._per_graph_kwargs)
 
         return self._appropriateness_of_graph(graph)
@@ -189,3 +208,14 @@ class HierarchicalProximityGraph2DCollector(GraphCollector):
             )
 
         return similarity
+
+
+class HPG2DCollector(HPG2DCollectorBase):
+    def __init__(self, window_size=2, number_of_levels=5, stride=4):
+        super().__init__(
+            SimilarityNVS(),
+            DocumentNGramGraph,
+            window_size=window_size,
+            number_of_levels=number_of_levels,
+            stride=stride,
+        )

@@ -10,8 +10,6 @@
  Created on May 24, 2017, 3:56 PM
 """
 
-from functools import reduce
-
 from pyinsect.documentModel.comparators.Operator import BinaryOperator
 
 
@@ -173,17 +171,42 @@ class SimilarityHPG(Similarity):
         if not document_n_gram_h_graph1 or not document_n_gram_h_graph2:
             return 0
 
-        similarity = 0
+        lvls, similarity = [], 0
 
-        for level, (current_1, current_2) in enumerate(
+        for lvl, (current_1, current_2) in enumerate(
             zip(document_n_gram_h_graph1, document_n_gram_h_graph2), start=1
         ):
-            current_lvl_similarity = (
-                self._per_level_similarity_metric.getSimilarityDouble(
-                    current_1, current_2
+            try:
+                current_lvl_similarity = (
+                    self._per_level_similarity_metric.getSimilarityDouble(
+                        current_1, current_2
+                    )
                 )
-            )
+            except ZeroDivisionError:
+                # NOTE: In case 2 subgraphs are both empty and we are using `SimilaritySS`
+                # or `SimilarityNVS` a `ZeroDivisionError` is going to be raised as it
+                # is expected that at least on of the graphs is non-empty.
+                # Check the NOTE on `DocumentNGramHGraph2D.as_graph` for more details
+                # The original implementation of `SimilaritySS` (as well as `SimilarityNVS`)
+                # considers two empty graphs to be nothing alike (returns `0`). In the context,
+                # of HPG it is not clear if the same approach should be adopted, as it is
+                # highly possible that in the context of a multi-level HPG, one or more
+                # sub-graph might degenerate to an empty graph.
+                # This would entail, that the similarity of two identical HPGs,
+                # containing empty sub-graphs would not receive the expected
+                # value of 1.
+                # For the time being, such degenerate sub-graphs are going
+                # to be completely ignored when calculating the similarity of
+                # 2 HPGs.
+                # For example, given 2 5 level HPGs, if levels 4 and 5 are empty
+                # and every other corresponding sub-graphs of the two are identical
+                # the HPG similarity of the two is going to be calculated as such
+                # `(1 * 1 + 1 * 2 + 1 * 3) / (1 + 2 + 3)`
+                # instead of
+                # `(1 * 1 + 1 * 2 + 1 * 3 + 0 * 4 + 0 * 5) / (1 + 2 + 3 + 4 + 5)`
+                continue
 
-            similarity += level * current_lvl_similarity
+            similarity += lvl * current_lvl_similarity
+            lvls.append(lvl)
 
-        return similarity / reduce(lambda x, y: x + y, range(1, level + 1))
+        return similarity / sum(lvls)

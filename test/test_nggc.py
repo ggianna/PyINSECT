@@ -4,18 +4,18 @@ from pyinsect.collector.NGramGraphCollector import NGramGraphCollector
 
 
 class NGramGraphCollectorTestCase(unittest.TestCase):
-    train_data = [
-        "A test...",
-        "Another, bigger test. But a test, anyway...",
-    ]
-
-    test_data = [
-        ("A test...", 0.5959),
-        ("Another, bigger test...", 0.8530),
-        ("Something irrelevant!", 0),
-    ]
-
     def setUp(self):
+        self.train_data = [
+            "A test...",
+            "Another, bigger test. But a test, anyway...",
+        ]
+
+        self.test_data = [
+            ("A test...", 0.5959),
+            ("Another, bigger test...", 0.8530),
+            ("Something irrelevant!", 0),
+        ]
+
         self.collector = NGramGraphCollector()
 
         for entry in self.train_data:
