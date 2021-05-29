@@ -1,5 +1,4 @@
 import logging
-import math
 from abc import ABC, abstractmethod
 
 from pyinsect.indexing.graph_index import GraphIndex
@@ -87,16 +86,16 @@ class DocumentNGramHGraph2D(DocumentNGramHGraph):
         return max(0, min(index, len(data) - 1))
 
     @classmethod
-    def _get_window(cls, data, window_size, center):
-        index_min = cls._clamp(data, center - window_size // 2)
-        index_max = cls._clamp(data, center + window_size // 2)
+    def _get_window(cls, data, window_size, midpoint):
+        index_min = cls._clamp(data, midpoint - window_size // 2)
+        index_max = cls._clamp(data, midpoint + window_size // 2)
 
         return index_min, index_max
 
     @classmethod
-    def _get_patch(cls, matrix, window_size, current_y, current_x):
-        y_min, y_max = cls._get_window(matrix, window_size, current_y)
-        x_min, x_max = cls._get_window(matrix, window_size, current_x)
+    def _get_patch(cls, matrix, window_size, y, x):
+        y_min, y_max = cls._get_window(matrix, window_size, y)
+        x_min, x_max = cls._get_window(matrix, window_size, x)
 
         return [
             [value for value in submatrix[x_min:x_max]]
@@ -122,18 +121,18 @@ class DocumentNGramHGraph2D(DocumentNGramHGraph):
 
             previous_lvl_data = self._data_per_lvl[-1]
 
-            number_of_neighborhoods = math.ceil(len(previous_lvl_data) / self._stride)
+            number_of_neighborhoods = len(range(0, len(previous_lvl_data), self._stride))
 
             current_lvl_data = [[0] * number_of_neighborhoods] * number_of_neighborhoods
 
-            for current_y in range(0, len(previous_lvl_data), self._stride):
-                logger.debug("Current row: %02d", current_y)
+            for current_y, previous_y in enumerate(range(0, len(previous_lvl_data), self._stride)):
+                logger.debug("Current row: %02d", previous_y)
 
-                for current_x in range(0, len(previous_lvl_data), self._stride):
-                    logger.debug("Current column: %02d", current_x)
+                for current_x, previous_x in enumerate(range(0, len(previous_lvl_data[previous_y]), self._stride)):
+                    logger.debug("Current column: %02d", previous_x)
 
                     patch = self._get_patch(
-                        previous_lvl_data, current_lvl_window_size, current_y, current_x
+                        previous_lvl_data, current_lvl_window_size, previous_y, previous_x
                     )
 
                     neighborhood = ArrayGraph2D(
