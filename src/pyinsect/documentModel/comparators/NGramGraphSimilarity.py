@@ -161,14 +161,10 @@ class SimilarityHPG(Similarity):
     the HPGs Value Similarity.
     """
 
-    def __init__(
-        self, per_level_similarity_metric_type, commutative=True, distributional=False
-    ):
-        super().__init__(commutative=commutative, distributional=distributional)
+    def __init__(self, per_level_similarity_metric):
+        super().__init__()
 
-        self._per_level_similarity_metric = per_level_similarity_metric_type(
-            commutative=commutative, distributional=distributional
-        )
+        self._per_level_similarity_metric = per_level_similarity_metric
 
     def getSimilarityDouble(self, document_n_gram_h_graph1, document_n_gram_h_graph2):
         if not document_n_gram_h_graph1 and not document_n_gram_h_graph2:

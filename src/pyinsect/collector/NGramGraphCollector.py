@@ -21,7 +21,6 @@ class GraphCollector(ABC):
 
     def __init__(self, similarity_metric):
         self._number_of_docs = 0
-        self._representative_graph = None
 
         self._similarity_metric = similarity_metric
 
@@ -36,22 +35,69 @@ class GraphCollector(ABC):
     def __repr__(self):
         return '<{0} "{1}">'.format(self.__class__.__name__, str(self))
 
-    @property
-    def representative_graph(self):
-        return self._representative_graph
+    @abstractmethod
+    def add(self, *args, **kwargs):
+        raise NotImplementedError
 
-    def _add_graph(self, graph, deep_copy=False):
+    @abstractmethod
+    def appropriateness_of(self, *args, **kwargs):
+        raise NotImplementedError
+
+
+class NGramGraphCollector(GraphCollector):
+    def __init__(
+        self, n=3, window_size=3, deep_copy=False, commutative=True, distributional=True
+    ):
+        super().__init__(SimilarityNVS())
+
+        self._deep_copy = deep_copy
+        self._n = n
+        self._window_size = window_size
+
+        self._commutative = commutative
+        self._distributional = distributional
+
+        self._representative_graph = None
+
+    def __str__(self):
+        return "{0}, n-gram rank: {1}, window size: {2}".format(
+            super().__str__(), self._n, self._window_size
+        )
+
+    def add(self, text):
+        """Adds the graph of the input text to the representative graph."""
+
+        graph = DocumentNGramGraph(self._n, self._window_size, text)
+
+        self._add_graph(graph)
+
+    def appropriateness_of(self, text):
+        """
+        Returns a degree of `appropriateness` of a text, given the representative graph.
+        Essentially it calculates the Normalized Value Similarity of the text to the representative graph.
+        """
+
+        # FIXME: In my humble opinion the logic of appropriateness calculation
+        # should be moved outside of the data collection module
+
+        graph = DocumentNGramGraph(self._n, self._window_size, text)
+
+        return self._appropriateness_of_graph(graph)
+
+    def _add_graph(self, graph):
         """Adds the graph input to the representative graph."""
 
         if self._number_of_docs == 0:
             self._representative_graph = graph
         else:
-            bop = Union(
-                lf=1 / (self._number_of_docs + 1), commutative=True, distributional=True
+            union = Union(
+                lf=1 / (self._number_of_docs + 1),
+                commutative=self._commutative,
+                distributional=self._distributional,
             )
 
-            self._representative_graph = bop.apply(
-                self._representative_graph, graph, dc=deep_copy
+            self._representative_graph = union.apply(
+                self._representative_graph, graph, dc=self._deep_copy
             )
 
         self._number_of_docs += 1
@@ -67,35 +113,79 @@ class GraphCollector(ABC):
 
         return self._similarity_metric(graph, self._representative_graph)
 
-    @abstractmethod
-    def add(self, *args, **kwargs):
-        raise NotImplementedError
 
-    @abstractmethod
-    def appropriateness_of(self, *args, **kwargs):
-        raise NotImplementedError
+class HierarchicalProximityGraph2DCollector(GraphCollector):
+    def __init__(
+        self,
+        similarity_metric,
+        window_size,
+        number_of_levels,
+        graph_type,
+        *args,
+        minimum_merging_margin=0.8,
+        maximum_merging_margin=0.9,
+        stride=1,
+        **kwargs
+    ):
+        super().__init__(SimilarityHPG(similarity_metric))
 
+        self._window_size = window_size
+        self._number_of_levels = number_of_levels
+        self._per_graph_similarity_metric = similarity_metric
+        self._minimum_merging_margin = minimum_merging_margin
+        self._maximum_merging_margin = maximum_merging_margin
+        self._stride = stride
 
-class NGramGraphCollector(GraphCollector):
-    def __init__(self):
-        super().__init__(SimilarityNVS())
+        self._graph_type = graph_type
+        self._per_graph_args = args
+        self._per_graph_kwargs = kwargs
 
-    def add(self, text, deep_copy=False, n=3, window_size=3):
-        """Adds the graph of the input text to the representative graph."""
+        self._graphs = []
 
-        graph = DocumentNGramGraph(n, window_size, text)
+    def __str__(self):
+        return "{0}, window size: {1}, stride: {2}, number of levels: {3}, graph type: {4}".format(
+            super().__str__(),
+            self._window_size,
+            self._stride,
+            self._number_of_levels,
+            self._graph_type,
+        )
 
-        self._add_graph(graph, deep_copy=deep_copy)
+    def add(self, matrix_2d):
+        graph = DocumentNGramHGraph2D(
+            matrix_2d,
+            self._window_size,
+            self._number_of_levels,
+            self._similarity_metric,
+            minimum_merging_margin=self._minimum_merging_margin,
+            maximum_merging_margin=self._maximum_merging_margin,
+            stride=self.stride,
+        ).as_graph(self._graph_type, *self._per_graph_args, **self._per_graph_kwargs)
 
-    def appropriateness_of(self, text, n=3, window_size=3):
-        """
-        Returns a degree of `appropriateness` of a text, given the representative graph.
-        Essentially it calculates the Normalized Value Similarity of the text to the representative graph.
-        """
+        self._add_graph(graph)
 
-        # FIXME: In my humble opinion the logic of appropriateness calculation
-        # should be moved outside of the data collection module
-
-        graph = DocumentNGramGraph(n, window_size, text)
+    def appropriateness_of(self, matrix_2d):
+        graph = DocumentNGramHGraph2D(
+            matrix_2d,
+            self._window_size,
+            self._number_of_levels,
+            self._similarity_metric,
+            minimum_merging_margin=self._minimum_merging_margin,
+            maximum_merging_margin=self._maximum_merging_margin,
+            stride=self.stride,
+        ).as_graph(self._graph_type, *self._per_graph_args, **self._per_graph_kwargs)
 
         return self._appropriateness_of_graph(graph)
+
+    def _add_graph(self, graph):
+        self._graphs.append(graph)
+
+    def _appropriateness_of_graph(self, graph):
+        similarity = 0
+
+        for other_graph in self._graphs:
+            similarity += self._similarity_metric(other_graph, graph) / len(
+                self._graphs
+            )
+
+        return similarity

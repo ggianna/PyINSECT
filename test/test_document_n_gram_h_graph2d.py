@@ -24,7 +24,7 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
         self.data = self.generate_random_2d_int_array(5)
 
         self.array_graph_metric = SimilarityVS()
-        self.hpg_metric = SimilarityHPG(SimilarityVS)
+        self.hpg_metric = SimilarityHPG(self.array_graph_metric)
 
     def test_same_similarity(self):
         graph1 = DocumentNGramHGraph2D(
