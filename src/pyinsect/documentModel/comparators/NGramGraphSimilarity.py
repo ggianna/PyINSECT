@@ -124,9 +124,13 @@ class SimilarityNVS(Similarity):
     def getSimilarityDouble(self, ngg1, ngg2):
         SS = SimilaritySS()
         VS = SimilarityVS()
-        return (VS.getSimilarityDouble(ngg1, ngg2) * 1.0) / SS.getSimilarityDouble(
-            ngg1, ngg2
-        )
+
+        try:
+            return (VS.getSimilarityDouble(ngg1, ngg2) * 1.0) / SS.getSimilarityDouble(
+                ngg1, ngg2
+            )
+        except ZeroDivisionError:
+            return 0.0
 
     # given two ngram graphs
     # returns the NVS-similarity
@@ -176,23 +180,11 @@ class SimilarityHPG(Similarity):
         for lvl, (current_1, current_2) in enumerate(
             zip(document_n_gram_h_graph1, document_n_gram_h_graph2), start=1
         ):
-            try:
-                current_lvl_similarity = (
-                    self._per_level_similarity_metric.getSimilarityDouble(
-                        current_1, current_2
-                    )
-                )
-            except ZeroDivisionError:
-                # NOTE: In case 2 subgraphs are both empty and we are using `SimilaritySS`
-                # or `SimilarityNVS` a `ZeroDivisionError` is going to be raised as it
-                # is expected that at least on of the graphs is non-empty.
-                # Check the NOTE on `DocumentNGramHGraph2D.as_graph` for more details
-                # The original implementation of `SimilaritySS` (as well as `SimilarityNVS`)
-                # considers two empty graphs to be nothing alike (returns `0`). In the context,
-                # of HPG it is not clear if the same approach should be adopted, as it is
-                # highly possible that in the context of a multi-level HPG, one or more
-                # sub-graph might degenerate to an empty graph.
-                # This would entail, that the similarity of two identical HPGs,
+            if not current_1 and not current_2:
+                # NOTE: In the context a multi-level HPG, it is highly probable that,
+                # one or more sub-graph might degenerate to empty graphs.
+                # Given a similarity metric such as `SimilarityNVS`,
+                # this would entail, that the similarity of two identical HPGs,
                 # containing empty sub-graphs would not receive the expected
                 # value of 1.
                 # For the time being, such degenerate sub-graphs are going
@@ -205,6 +197,12 @@ class SimilarityHPG(Similarity):
                 # instead of
                 # `(1 * 1 + 1 * 2 + 1 * 3 + 0 * 4 + 0 * 5) / (1 + 2 + 3 + 4 + 5)`
                 continue
+
+            current_lvl_similarity = (
+                self._per_level_similarity_metric.getSimilarityDouble(
+                    current_1, current_2
+                )
+            )
 
             similarity += lvl * current_lvl_similarity
             lvls.append(lvl)

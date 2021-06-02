@@ -5,10 +5,6 @@ from pyinsect.indexing.graph_index import GraphIndex
 from pyinsect.structs.array_graph import ArrayGraph2D
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    format="%(levelname)s: %(message)s",
-    level=logging.DEBUG,
-)
 
 
 class DocumentNGramHGraph(ABC):

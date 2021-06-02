@@ -9,6 +9,9 @@ from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNG
 from pyinsect.documentModel.representations.DocumentNGramHGraph import (
     DocumentNGramHGraph2D,
 )
+from pyinsect.documentModel.representations.DocumentNGramSymWinGraph import (
+    DocumentNGramSymWinGraph,
+)
 
 
 class GraphCollector(ABC):
@@ -72,7 +75,7 @@ class NGramGraphCollectorBase(GraphCollector):
     def add(self, text):
         """Adds the graph of the input text to the representative graph."""
 
-        graph = DocumentNGramGraph(self._n, self._window_size, text)
+        graph = self._construct_graph(text)
 
         self._add_graph(graph)
 
@@ -85,9 +88,12 @@ class NGramGraphCollectorBase(GraphCollector):
         # FIXME: In my humble opinion the logic of appropriateness calculation
         # should be moved outside of the data collection module
 
-        graph = DocumentNGramGraph(self._n, self._window_size, text)
+        graph = self._construct_graph(text)
 
         return self._appropriateness_of_graph(graph)
+
+    def _construct_graph(self, data, *args, **kwargs):
+        return DocumentNGramGraph(self._n, self._window_size, data)
 
     def _add_graph(self, graph):
         """Adds the graph input to the representative graph."""
@@ -171,30 +177,25 @@ class HPG2DCollectorBase(GraphCollector):
         )
 
     def add(self, matrix_2d):
-        graph = DocumentNGramHGraph2D(
-            matrix_2d,
-            self._window_size,
-            self._number_of_levels,
-            self._similarity_metric,
-            minimum_merging_margin=self._minimum_merging_margin,
-            maximum_merging_margin=self._maximum_merging_margin,
-            stride=self._stride,
-        ).as_graph(self._graph_type, *self._per_graph_args, **self._per_graph_kwargs)
+        graph = self._construct_graph(matrix_2d)
 
         self._add_graph(graph)
 
     def appropriateness_of(self, matrix_2d):
-        graph = DocumentNGramHGraph2D(
-            matrix_2d,
+        graph = self._construct_graph(matrix_2d)
+
+        return self._appropriateness_of_graph(graph)
+
+    def _construct_graph(self, data, *args, **kwargs):
+        return DocumentNGramHGraph2D(
+            data,
             self._window_size,
             self._number_of_levels,
-            self._similarity_metric,
+            self._per_graph_similarity_metric,
             minimum_merging_margin=self._minimum_merging_margin,
             maximum_merging_margin=self._maximum_merging_margin,
             stride=self._stride,
         ).as_graph(self._graph_type, *self._per_graph_args, **self._per_graph_kwargs)
-
-        return self._appropriateness_of_graph(graph)
 
     def _add_graph(self, graph):
         self._graphs.append(graph)
@@ -211,10 +212,10 @@ class HPG2DCollectorBase(GraphCollector):
 
 
 class HPG2DCollector(HPG2DCollectorBase):
-    def __init__(self, window_size=2, number_of_levels=5, stride=4):
+    def __init__(self, window_size=2, number_of_levels=5, stride=1):
         super().__init__(
             SimilarityNVS(),
-            DocumentNGramGraph,
+            DocumentNGramSymWinGraph,
             window_size=window_size,
             number_of_levels=number_of_levels,
             stride=stride,

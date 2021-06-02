@@ -17,7 +17,7 @@ class HPG2DCollectorTestCase(unittest.TestCase):
         self.test_data = [
             (self.train_data[0], 0.5),
             (self.transpose(self.train_data[1]), 0.5),
-            (self.generate_random_2d_int_array(6), 0),
+            (self.generate_random_2d_int_array(6), 0.001),
         ]
 
         self.collector = HPG2DCollector()
