@@ -367,7 +367,7 @@ class ParallelNary(NaryOperator):
                 if (count % 2) == 1:
                     l.append((prev, thing))
                 else:
-                    prev = thing
+                    pass
 
             # create a mutable object to pass to threads
             fargs = {}

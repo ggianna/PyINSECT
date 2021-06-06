@@ -6,12 +6,10 @@ from pyinsect.documentModel.comparators.NGramGraphSimilarity import (
 )
 from pyinsect.documentModel.comparators.Operator import Union
 from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
-from pyinsect.documentModel.representations.DocumentNGramHGraph import (
-    DocumentNGramHGraph2D,
-)
 from pyinsect.documentModel.representations.DocumentNGramSymWinGraph import (
     DocumentNGramSymWinGraph,
 )
+from pyinsect.documentModel.representations.hpg import HPG2D, HPG2DParallel
 
 
 class GraphCollector(ABC):
@@ -187,7 +185,7 @@ class HPG2DCollectorBase(GraphCollector):
         return self._appropriateness_of_graph(graph)
 
     def _construct_graph(self, data, *args, **kwargs):
-        return DocumentNGramHGraph2D(
+        return HPG2D(
             data,
             self._window_size,
             self._number_of_levels,
@@ -220,3 +218,16 @@ class HPG2DCollector(HPG2DCollectorBase):
             number_of_levels=number_of_levels,
             stride=stride,
         )
+
+
+class HPG2DCollectorParallel(HPG2DCollector):
+    def _construct_graph(self, data, *args, **kwargs):
+        return HPG2DParallel(
+            data,
+            self._window_size,
+            self._number_of_levels,
+            self._per_graph_similarity_metric,
+            minimum_merging_margin=self._minimum_merging_margin,
+            maximum_merging_margin=self._maximum_merging_margin,
+            stride=self._stride,
+        ).as_graph(self._graph_type, *self._per_graph_args, **self._per_graph_kwargs)

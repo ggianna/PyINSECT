@@ -11,9 +11,9 @@ sudo pip install networkx
 
 
 # Install MathPlot lib
-sudo apt-get install python-dev 
+sudo apt-get install python-dev
 sudo apt-get install python-tk
-sudo python -m pip install matplotlib 
+sudo python -m pip install matplotlib
 
 # Install Pydot, PydotPlus
 sudo pip install pydot

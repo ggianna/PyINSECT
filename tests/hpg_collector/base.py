@@ -1,11 +1,10 @@
 import random
 import string
-import unittest
-
-from pyinsect.collector.NGramGraphCollector import HPG2DCollector
 
 
-class HPG2DCollectorTestCase(unittest.TestCase):
+class HPGCollectorTestCaseMixin(object):
+    collector_type = None
+
     def setUp(self):
         random.seed(1234)
 
@@ -20,14 +19,16 @@ class HPG2DCollectorTestCase(unittest.TestCase):
             (self.generate_random_2d_int_array(6), 0.001),
         ]
 
-        self.collector = HPG2DCollector()
+        self.collector = self.collector_type()
 
         for entry in self.train_data:
             self.collector.add(entry)
 
     def test_appropriateness_of(self):
-        for entry, expected in self.test_data:
-            with self.subTest(query=entry):
+        for index, (entry, expected) in enumerate(self.test_data):
+            with self.subTest(
+                collector=self.collector_type, index=index, expected=expected
+            ):
                 self.assertAlmostEqual(
                     self.collector.appropriateness_of(entry), expected, places=3
                 )

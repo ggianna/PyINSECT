@@ -9,7 +9,7 @@
 
 import matplotlib.pyplot as plt
 import networkx as nx
-import pygraphviz as pgv
+from networkx.algorithms.isomorphism import numerical_edge_match
 from networkx.drawing.nx_agraph import graphviz_layout
 
 """
@@ -56,6 +56,11 @@ class DocumentNGramGraph:
     def __len__(self):
         return self._Graph.size()
 
+    def __eq__(self, other):
+        return nx.is_isomorphic(
+            self._Graph, other._Graph, edge_match=numerical_edge_match("weight", 1)
+        )
+
     # we will now define @method buildGraph
     # which takes a data input
     # segments ngrams
@@ -65,13 +70,13 @@ class DocumentNGramGraph:
     def buildGraph(self, verbose=False, d=[]):
         # set Data @class_var
         self.setData(d)
-        Data = self._Data
+        self._Data
 
         # build ngram
         ng = self.build_ngram()
         s = len(ng)
 
-        win = self._Dwin
+        self._Dwin
 
         # init graph
         # TODO: add clear function

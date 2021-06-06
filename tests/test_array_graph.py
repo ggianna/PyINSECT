@@ -1,6 +1,6 @@
 import unittest
 
-from pyinsect.documentModel.representations import DocumentNGramGraph
+from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
 from pyinsect.structs.array_graph import ArrayGraph2D
 
 

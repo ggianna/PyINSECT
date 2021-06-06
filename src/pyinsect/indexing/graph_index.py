@@ -29,7 +29,7 @@ class GraphIndex(object):
             if similarity >= self.minimum_merging_margin:
                 union = Union(lf=1 - (count / (count + 1)))
 
-                other_graph = union.apply(graph, other_graph)
+                other_graph = union.apply(other_graph, graph)
                 count = count + 1
 
                 self._graph_index[index] = (other_graph, count)

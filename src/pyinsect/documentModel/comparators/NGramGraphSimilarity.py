@@ -156,7 +156,7 @@ class SimilarityNVS(Similarity):
 
 class SimilarityHPG(Similarity):
     """A custom `Similarity` metric tailored to the complexities
-    of Hierarchical Proximity Graphs (HPG - `DocumentNGramHGraph`).
+    of Hierarchical Proximity Graphs (`HPG`).
 
     Given two HPGs, the `Value Similarity` of every sub-graph pair is computed,
     on a pair level basis, and the weighted mean of among all levels is considered

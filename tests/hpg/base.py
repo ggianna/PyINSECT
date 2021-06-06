@@ -2,18 +2,16 @@ import itertools
 import logging
 import random
 import string
-import unittest
 
 from pyinsect.documentModel.comparators import SimilarityHPG, SimilarityVS
-from pyinsect.documentModel.representations import (
-    DocumentNGramGraph,
-    DocumentNGramHGraph2D,
-)
+from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
 
 logger = logging.getLogger(__name__)
 
 
-class DocumentNGramHGraphTestCase(unittest.TestCase):
+class HPGTestCaseMixin(object):
+    graph_type = None
+
     def setUp(self):
         random.seed(1234)
 
@@ -23,17 +21,28 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
         self.hpg_metric = SimilarityHPG(self.array_graph_metric)
 
     def test_same_similarity(self):
-        graph1 = DocumentNGramHGraph2D(
-            self.data, 3, 3, self.array_graph_metric
-        ).as_graph(DocumentNGramGraph)
+        graph1 = self.graph_type(self.data, 3, 3, self.array_graph_metric).as_graph(
+            DocumentNGramGraph
+        )
 
-        graph2 = DocumentNGramHGraph2D(
-            self.data, 3, 3, self.array_graph_metric
-        ).as_graph(DocumentNGramGraph)
+        graph2 = self.graph_type(self.data, 3, 3, self.array_graph_metric).as_graph(
+            DocumentNGramGraph
+        )
 
         value = self.hpg_metric(graph1, graph2)
 
         self.assertEqual(value, 1.0)
+
+    def test_equality(self):
+        graph1 = self.graph_type(self.data, 3, 3, self.array_graph_metric).as_graph(
+            DocumentNGramGraph
+        )
+
+        graph2 = self.graph_type(self.data, 3, 3, self.array_graph_metric).as_graph(
+            DocumentNGramGraph
+        )
+
+        self.assertEqual(graph1, graph2)
 
     def test_diff_similarity(self):
         for permutation_index, permutation in enumerate(
@@ -45,11 +54,11 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
             logger.info("Permutation: %02d", permutation_index)
 
             with self.subTest(permutation=permutation):
-                graph1 = DocumentNGramHGraph2D(
+                graph1 = self.graph_type(
                     permutation, 3, 3, self.array_graph_metric
                 ).as_graph(DocumentNGramGraph)
 
-                graph2 = DocumentNGramHGraph2D(
+                graph2 = self.graph_type(
                     self.data, 3, 3, self.array_graph_metric
                 ).as_graph(DocumentNGramGraph)
 
@@ -61,11 +70,11 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
         data1 = self.generate_random_2d_int_array(5)
         data2 = self.generate_random_2d_int_array(5)
 
-        graph1 = DocumentNGramHGraph2D(data1, 3, 3, self.array_graph_metric).as_graph(
+        graph1 = self.graph_type(data1, 3, 3, self.array_graph_metric).as_graph(
             DocumentNGramGraph
         )
 
-        graph2 = DocumentNGramHGraph2D(data2, 3, 3, self.array_graph_metric).as_graph(
+        graph2 = self.graph_type(data2, 3, 3, self.array_graph_metric).as_graph(
             DocumentNGramGraph
         )
 
@@ -100,11 +109,11 @@ class DocumentNGramHGraphTestCase(unittest.TestCase):
             with self.subTest(
                 config1=(levels1, Dwin1, data1), config2=(levels2, Dwin2, data2)
             ):
-                graph1 = DocumentNGramHGraph2D(
+                graph1 = self.graph_type(
                     data1, Dwin1, levels1, self.array_graph_metric
                 ).as_graph(DocumentNGramGraph)
 
-                graph2 = DocumentNGramHGraph2D(
+                graph2 = self.graph_type(
                     data2, Dwin2, levels2, self.array_graph_metric
                 ).as_graph(DocumentNGramGraph)
 

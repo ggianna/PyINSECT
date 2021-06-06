@@ -1,14 +1,11 @@
 """
   DocumentNGramSymWinGraph.py
- 
+
   Created on May 23, 2017, 4:56 PM
- 
+
 """
 
-import matplotlib.pyplot as plt
 import networkx as nx
-import pygraphviz as pgv
-from networkx.drawing.nx_agraph import graphviz_layout
 
 from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
 
@@ -21,7 +18,7 @@ class DocumentNGramSymWinGraph(DocumentNGramGraph):
 
         # set Data @class_variable
         self.setData(d)
-        Data = self._Data
+        self._Data
 
         # build ngram
         ng = self.build_ngram()

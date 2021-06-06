@@ -1,7 +1,7 @@
 import unittest
 
 from pyinsect.documentModel.comparators import SimilarityNVS, Union
-from pyinsect.documentModel.representations import DocumentNGramGraph
+from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
 
 
 class DocumentNGramGraphTestCase(unittest.TestCase):
@@ -25,3 +25,8 @@ class DocumentNGramGraphTestCase(unittest.TestCase):
 
     def test_union(self):
         self.bop.apply(self.ngg1, self.ngg2)
+
+    def test_equality(self):
+        other = DocumentNGramGraph(3, 2, "abcdef")
+
+        self.assertEqual(self.ngg1, other)
