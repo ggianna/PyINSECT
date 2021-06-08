@@ -10,8 +10,11 @@
  Created on May 24, 2017, 3:56 PM
 """
 
+import logging
+
 from pyinsect.documentModel.comparators.Operator import BinaryOperator
 
+logger = logging.getLogger(__name__)
 
 # a general similarity class
 # that acts as a pseudo-interface
@@ -170,9 +173,19 @@ class SimilarityHPG(Similarity):
 
     def getSimilarityDouble(self, document_n_gram_h_graph1, document_n_gram_h_graph2):
         if not document_n_gram_h_graph1 and not document_n_gram_h_graph2:
+            logger.debug(
+                "Both %s and %s graphs are empty",
+                document_n_gram_h_graph1,
+                document_n_gram_h_graph2,
+            )
             return 1
 
         if not document_n_gram_h_graph1 or not document_n_gram_h_graph2:
+            logger.debug(
+                "One of %s and %s graphs are empty",
+                document_n_gram_h_graph1,
+                document_n_gram_h_graph2,
+            )
             return 0
 
         lvls, similarity = [], 0
@@ -180,6 +193,13 @@ class SimilarityHPG(Similarity):
         for lvl, (current_1, current_2) in enumerate(
             zip(document_n_gram_h_graph1, document_n_gram_h_graph2), start=1
         ):
+            logger.debug(
+                "Calculating similarity of graphs %s and %s on level %02d",
+                current_1,
+                current_2,
+                lvl,
+            )
+
             if not current_1 and not current_2:
                 # NOTE: In the context a multi-level HPG, it is highly probable that,
                 # one or more sub-graph might degenerate to empty graphs.
@@ -196,6 +216,7 @@ class SimilarityHPG(Similarity):
                 # `(1 * 1 + 1 * 2 + 1 * 3) / (1 + 2 + 3)`
                 # instead of
                 # `(1 * 1 + 1 * 2 + 1 * 3 + 0 * 4 + 0 * 5) / (1 + 2 + 3 + 4 + 5)`
+                logger.debug("Both %s and %s graphs are empty", current_1, current_2)
                 continue
 
             current_lvl_similarity = (
@@ -204,7 +225,22 @@ class SimilarityHPG(Similarity):
                 )
             )
 
+            logger.debug(
+                "The similarity of graphs %s and %s is %05.3f",
+                current_1,
+                current_2,
+                current_lvl_similarity,
+            )
+
             similarity += lvl * current_lvl_similarity
+
+            logger.debug(
+                "The overall similarity of graph %s and graph %s is %05.3f",
+                document_n_gram_h_graph1,
+                document_n_gram_h_graph2,
+                (similarity / sum(lvls)) if lvls else 0,
+            )
+
             lvls.append(lvl)
 
-        return similarity / sum(lvls)
+        return similarity / sum(lvls) if lvls else 0

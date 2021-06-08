@@ -1,15 +1,14 @@
-import unittest
-
 from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
 from pyinsect.documentModel.representations.hpg import HPG2D, HPG2DParallel
+from tests.base import BaseTestCase
 from tests.hpg.base import HPGTestCaseMixin
 
 
-class HPG2DTestCase(HPGTestCaseMixin, unittest.TestCase):
+class HPG2DTestCase(HPGTestCaseMixin, BaseTestCase):
     graph_type = HPG2D
 
 
-class HPG2DParallelTestCase(HPGTestCaseMixin, unittest.TestCase):
+class HPG2DParallelTestCase(HPGTestCaseMixin, BaseTestCase):
     graph_type = HPG2DParallel
 
     def test_equality_non_parallel(self):

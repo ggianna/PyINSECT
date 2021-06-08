@@ -1,3 +1,4 @@
+import logging
 from abc import ABC, abstractmethod
 
 from pyinsect.documentModel.comparators.NGramGraphSimilarity import (
@@ -10,6 +11,8 @@ from pyinsect.documentModel.representations.DocumentNGramSymWinGraph import (
     DocumentNGramSymWinGraph,
 )
 from pyinsect.documentModel.representations.hpg import HPG2D, HPG2DParallel
+
+logger = logging.getLogger(__name__)
 
 
 class GraphCollector(ABC):
@@ -73,8 +76,10 @@ class NGramGraphCollectorBase(GraphCollector):
     def add(self, text):
         """Adds the graph of the input text to the representative graph."""
 
+        logger.debug("Constructing graph from %s", text)
         graph = self._construct_graph(text)
 
+        logger.debug("Adding graph %s", graph)
         self._add_graph(graph)
 
     def appropriateness_of(self, text):
@@ -83,11 +88,10 @@ class NGramGraphCollectorBase(GraphCollector):
         Essentially it calculates the Normalized Value Similarity of the text to the representative graph.
         """
 
-        # FIXME: In my humble opinion the logic of appropriateness calculation
-        # should be moved outside of the data collection module
-
+        logger.debug("Constructing graph from %s", text)
         graph = self._construct_graph(text)
 
+        logger.debug("Calculating the appropriateness of graph %s", graph)
         return self._appropriateness_of_graph(graph)
 
     def _construct_graph(self, data, *args, **kwargs):
@@ -97,6 +101,10 @@ class NGramGraphCollectorBase(GraphCollector):
         """Adds the graph input to the representative graph."""
 
         if self._number_of_docs == 0:
+            logger.debug(
+                "No documents parsed yet. Assigning %s as the representative graph",
+                graph,
+            )
             self._representative_graph = graph
         else:
             union = Union(
@@ -105,10 +113,19 @@ class NGramGraphCollectorBase(GraphCollector):
                 distributional=self._distributional,
             )
 
+            logger.debug(
+                "Merging graph %s into representative graph %s (deep_copy=%r)",
+                graph,
+                self._representative_graph,
+                self._deep_copy,
+            )
             self._representative_graph = union.apply(
                 self._representative_graph, graph, dc=self._deep_copy
             )
 
+        logging.debug(
+            "Incrementing the number of documents to %02d", self._number_of_docs
+        )
         self._number_of_docs += 1
 
     def _appropriateness_of_graph(self, graph):
@@ -116,9 +133,6 @@ class NGramGraphCollectorBase(GraphCollector):
         Returns a degree of `appropriateness` of a graph, given the representative graph.
         Essentially it calculates the Normalized Value Similarity of the graph to the representative graph.
         """
-
-        # FIXME: In my humble opinion the logic of appropriateness calculation
-        # should be moved outside of the data collection module
 
         return self._similarity_metric(graph, self._representative_graph)
 
@@ -175,13 +189,19 @@ class HPG2DCollectorBase(GraphCollector):
         )
 
     def add(self, matrix_2d):
+        logger.debug("Constructing graph from %s", matrix_2d)
+
         graph = self._construct_graph(matrix_2d)
 
+        logger.debug("Adding graph %s", graph)
         self._add_graph(graph)
 
     def appropriateness_of(self, matrix_2d):
+        logger.debug("Constructing graph from %s", matrix_2d)
+
         graph = self._construct_graph(matrix_2d)
 
+        logger.debug("Calculating the appropriateness of graph %s", graph)
         return self._appropriateness_of_graph(graph)
 
     def _construct_graph(self, data, *args, **kwargs):
@@ -196,14 +216,41 @@ class HPG2DCollectorBase(GraphCollector):
         ).as_graph(self._graph_type, *self._per_graph_args, **self._per_graph_kwargs)
 
     def _add_graph(self, graph):
+        logger.debug("Appending graph %s to the list of graphs", graph)
         self._graphs.append(graph)
 
     def _appropriateness_of_graph(self, graph):
         similarity = 0
 
-        for other_graph in self._graphs:
-            similarity += self._similarity_metric(other_graph, graph) / len(
+        for index, other_graph in enumerate(self._graphs):
+            logger.debug(
+                "Calculating the '%r' similarity on level %02d between graph %s and graph %s",
+                self._similarity_metric,
+                index,
+                graph,
+                other_graph,
+            )
+
+            current_similarity = self._similarity_metric(other_graph, graph) / len(
                 self._graphs
+            )
+
+            logger.debug(
+                "The '%r' similarity on level %02d between graph %s and graph %s is %05.3f",
+                self._similarity_metric,
+                index,
+                graph,
+                other_graph,
+                current_similarity,
+            )
+
+            similarity += current_similarity
+
+            logger.debug(
+                "The overall similarity of graph %s and graph %s is %05.3f",
+                graph,
+                other_graph,
+                similarity,
             )
 
         return similarity

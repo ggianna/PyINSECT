@@ -1,11 +1,12 @@
-import unittest
-
 from pyinsect.documentModel.comparators import SimilarityNVS, Union
 from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
+from tests.base import BaseTestCase
 
 
-class DocumentNGramGraphTestCase(unittest.TestCase):
+class DocumentNGramGraphTestCase(BaseTestCase):
     def setUp(self):
+        super().setUp()
+
         self.ngg1 = DocumentNGramGraph(3, 2, "abcdef")
         self.ngg2 = DocumentNGramGraph(3, 2, "abcdeff")
 

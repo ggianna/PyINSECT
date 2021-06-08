@@ -6,6 +6,8 @@ class HPGCollectorTestCaseMixin(object):
     collector_type = None
 
     def setUp(self):
+        super().setUp()
+
         random.seed(1234)
 
         self.train_data = [

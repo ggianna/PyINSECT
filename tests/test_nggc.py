@@ -1,10 +1,11 @@
-import unittest
-
 from pyinsect.collector.NGramGraphCollector import NGramGraphCollector
+from tests.base import BaseTestCase
 
 
-class NGramGraphCollectorTestCase(unittest.TestCase):
+class NGramGraphCollectorTestCase(BaseTestCase):
     def setUp(self):
+        super().setUp()
+
         self.train_data = [
             "A test...",
             "Another, bigger test. But a test, anyway...",

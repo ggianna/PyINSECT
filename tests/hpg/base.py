@@ -13,6 +13,8 @@ class HPGTestCaseMixin(object):
     graph_type = None
 
     def setUp(self):
+        super().setUp()
+
         random.seed(1234)
 
         self.data = self.generate_random_2d_int_array(5)

@@ -7,10 +7,14 @@
  *
 """
 
+import logging
+
 import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.algorithms.isomorphism import numerical_edge_match
 from networkx.drawing.nx_agraph import graphviz_layout
+
+logger = logging.getLogger(__name__)
 
 """
  *  Represents the graph of a document, with vertices n-grams of the document and edges the number
