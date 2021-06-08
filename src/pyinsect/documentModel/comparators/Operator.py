@@ -8,6 +8,12 @@ class Operator(object):
     def __init__(self):
         pass
 
+    def apply(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return self.apply(*args, **kwargs)
+
 
 # a genera Unary operator class
 # raising a value error on appliance
@@ -32,9 +38,6 @@ class Clone(UnaryOperator):
 # a general NaryOperator class
 class NaryOperator(Operator):
     def __init__(self):
-        pass
-
-    def apply(self, *args):
         pass
 
 
