@@ -245,6 +245,10 @@ class HPG2D(HPG):
 
 class HPG2DParallel(HPG2D):
     def as_graph(self, graph_type, *args, **kwargs):
+        pool = kwargs.get("pool", None)
+        if pool is None:
+            pool = concurrent.futures.ProcessPoolExecutor(os.cpu_count())
+
         logger.debug(
             "Constructing the initial ArrayGraph2D<%r, %r, %r> with a window size of %02d over data %r",
             graph_type,
@@ -293,52 +297,51 @@ class HPG2DParallel(HPG2D):
                 "Splitting neighborhood construction among %02d process", os.cpu_count()
             )
 
-            with concurrent.futures.ProcessPoolExecutor(os.cpu_count()) as pool:
-                futures = {}
+            futures = {}
 
-                for current_y, previous_y in enumerate(
-                    range(0, len(previous_lvl_data), self._stride)
+            for current_y, previous_y in enumerate(
+                range(0, len(previous_lvl_data), self._stride)
+            ):
+                for current_x, previous_x in enumerate(
+                    range(0, len(previous_lvl_data[previous_y]), self._stride)
                 ):
-                    for current_x, previous_x in enumerate(
-                        range(0, len(previous_lvl_data[previous_y]), self._stride)
-                    ):
-                        future = pool.submit(
-                            self._construct_neighborhood,
-                            previous_x,
-                            previous_y,
-                            previous_lvl_data,
-                            current_lvl_window_size,
-                            graph_type,
-                            *args,
-                            **kwargs
-                        )
-
-                        futures[future] = (current_y, current_x)
-
-                # FIXME: we avoid utilizing `concurrent.futures.as_completed`
-                # in this conctext, as the `GraphIndex` insertion order matters
-                # for future in concurrent.futures.as_completed(futures):
-                for future in futures:
-                    current_y, current_x = futures[future]
-
-                    logger.debug(
-                        "The construction of neighborhood (%02d, %02d) has finished",
-                        current_y,
-                        current_x,
+                    future = pool.submit(
+                        self._construct_neighborhood,
+                        previous_x,
+                        previous_y,
+                        previous_lvl_data,
+                        current_lvl_window_size,
+                        graph_type,
+                        *args,
+                        **kwargs
                     )
 
-                    neighborhood = future.result()
+                    futures[future] = (current_y, current_x)
 
-                    neighborhood_symbol = self._graph_indices[lvl - 1][neighborhood]
+            # FIXME: we avoid utilizing `concurrent.futures.as_completed`
+            # in this conctext, as the `GraphIndex` insertion order matters
+            # for future in concurrent.futures.as_completed(futures):
+            for future in futures:
+                current_y, current_x = futures[future]
 
-                    logger.debug(
-                        "Assigning neighborhood (%02d, %02d) the symbol %r",
-                        current_y,
-                        current_x,
-                        neighborhood_symbol,
-                    )
+                logger.debug(
+                    "The construction of neighborhood (%02d, %02d) has finished",
+                    current_y,
+                    current_x,
+                )
 
-                    current_lvl_data[current_y][current_x] = neighborhood_symbol
+                neighborhood = future.result()
+
+                neighborhood_symbol = self._graph_indices[lvl - 1][neighborhood]
+
+                logger.debug(
+                    "Assigning neighborhood (%02d, %02d) the symbol %r",
+                    current_y,
+                    current_x,
+                    neighborhood_symbol,
+                )
+
+                current_lvl_data[current_y][current_x] = neighborhood_symbol
 
             self._data_per_lvl.append(current_lvl_data)
 
@@ -346,36 +349,38 @@ class HPG2DParallel(HPG2D):
             "Splitting per level graph construction among %02d process", os.cpu_count()
         )
 
-        with concurrent.futures.ProcessPoolExecutor(os.cpu_count()) as pool:
-            futures = {}
+        futures = {}
 
-            for lvl in range(1, self._number_of_levels + 1):
-                future = pool.submit(
-                    ArrayGraph2D(
-                        self._data_per_lvl[lvl], self._window_size * lvl, self._stride
-                    ).as_graph,
-                    graph_type,
-                    *args,
-                    **kwargs
-                )
+        for lvl in range(1, self._number_of_levels + 1):
+            future = pool.submit(
+                ArrayGraph2D(
+                    self._data_per_lvl[lvl], self._window_size * lvl, self._stride
+                ).as_graph,
+                graph_type,
+                *args,
+                **kwargs
+            )
 
-                futures[future] = lvl
+            futures[future] = lvl
 
-            for future in concurrent.futures.as_completed(futures):
-                lvl = futures[future]
+        for future in concurrent.futures.as_completed(futures):
+            lvl = futures[future]
 
-                graph_of_lvl = future.result()
+            graph_of_lvl = future.result()
 
-                logger.debug(
-                    "The construction of the %02d level ArrayGraph2D<%r, %r, %r> with a window size of %02d over data %r has finished",
-                    lvl,
-                    graph_type,
-                    args,
-                    kwargs,
-                    self._window_size * lvl,
-                    self._data_per_lvl[lvl],
-                )
+            logger.debug(
+                "The construction of the %02d level ArrayGraph2D<%r, %r, %r> with a window size of %02d over data %r has finished",
+                lvl,
+                graph_type,
+                args,
+                kwargs,
+                self._window_size * lvl,
+                self._data_per_lvl[lvl],
+            )
 
-                self._graphs_per_level[lvl] = graph_of_lvl
+            self._graphs_per_level[lvl] = graph_of_lvl
+
+        if "pool" not in kwargs:
+            pool.shutdown(wait=True)
 
         return self

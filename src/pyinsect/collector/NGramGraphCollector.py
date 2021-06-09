@@ -257,13 +257,14 @@ class HPG2DCollectorBase(GraphCollector):
 
 
 class HPG2DCollector(HPG2DCollectorBase):
-    def __init__(self, window_size=2, number_of_levels=5, stride=1):
+    def __init__(self, window_size=2, number_of_levels=5, stride=1, **kwargs):
         super().__init__(
             SimilarityNVS(),
             DocumentNGramSymWinGraph,
             window_size=window_size,
             number_of_levels=number_of_levels,
             stride=stride,
+            **kwargs
         )
 
 
