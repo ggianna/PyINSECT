@@ -246,14 +246,7 @@ class HPG2D(HPG):
 
 
 class HPG2DParallel(HPG2D):
-    def as_graph(self, graph_type, *args, **kwargs):
-        if "pool" in kwargs:
-            logger.info("Utilizing the existing process pool")
-            pool = kwargs["pool"]
-        else:
-            logger.info("Instantiating a new process pool")
-            pool = concurrent.futures.ProcessPoolExecutor(os.cpu_count())
-
+    def as_graph(self, graph_type, *args, pool=None, **kwargs):
         logger.debug(
             "Constructing the initial ArrayGraph2D<%r, %r, %r> with a window size of %02d over data %r",
             graph_type,
@@ -384,9 +377,5 @@ class HPG2DParallel(HPG2D):
             )
 
             self._graphs_per_level[lvl] = graph_of_lvl
-
-        if "pool" not in kwargs:
-            logger.info("Shutting down the scope specific process pool")
-            pool.shutdown(wait=True)
 
         return self

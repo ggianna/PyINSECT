@@ -1,3 +1,5 @@
+import concurrent
+
 from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
 from pyinsect.documentModel.representations.hpg import HPG2D, HPG2DParallel
 from tests.base import BaseTestCase
@@ -21,3 +23,27 @@ class HPG2DParallelTestCase(HPGTestCaseMixin, BaseTestCase):
         )
 
         self.assertEqual(graph1, graph2)
+
+    def test_concurrency_on_graph_construction(self):
+        with concurrent.futures.ProcessPoolExecutor(2) as pool:
+            self.graph_type(self.data, 3, 3, self.array_graph_metric).as_graph(
+                DocumentNGramGraph, pool=pool
+            )
+
+    def test_concurrency_on_all_levels(self):
+        results = []
+
+        with concurrent.futures.ProcessPoolExecutor(2) as pool:
+            futures = []
+
+            for _ in range(2):
+                future = pool.submit(
+                    self.graph_type(self.data, 3, 3, self.array_graph_metric).as_graph,
+                    DocumentNGramGraph,
+                    pool=pool,
+                )
+
+                futures.append(future)
+
+            for future in concurrent.futures.as_completed(futures):
+                results.append(future.result())

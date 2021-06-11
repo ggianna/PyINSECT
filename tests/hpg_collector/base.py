@@ -21,18 +21,18 @@ class HPGCollectorTestCaseMixin(object):
             (self.generate_random_2d_int_array(6), 0.001),
         ]
 
-        self.collector = self.collector_type()
+    def test_appropriateness_of(self):
+        collector = self.collector_type()
 
         for entry in self.train_data:
-            self.collector.add(entry)
+            collector.add(entry)
 
-    def test_appropriateness_of(self):
         for index, (entry, expected) in enumerate(self.test_data):
             with self.subTest(
                 collector=self.collector_type, index=index, expected=expected
             ):
                 self.assertAlmostEqual(
-                    self.collector.appropriateness_of(entry), expected, places=3
+                    collector.appropriateness_of(entry), expected, places=3
                 )
 
     @classmethod

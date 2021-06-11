@@ -77,7 +77,7 @@ class GraphIndex(object):
                     graph,
                     other_graph,
                 )
-                graph = self.all_not_in(graph, other_graph)
+                graph = self.all_not_in(graph, other_graph, dc=self._deep_copy)
 
         if matching_index < 0:
             matching_index = len(self._graph_index)
