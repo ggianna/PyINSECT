@@ -21,6 +21,7 @@ class HPG(ABC):
         minimum_merging_margin=0.8,
         maximum_merging_margin=0.9,
         stride=1,
+        deep_copy=False,
     ):
         self._window_size = window_size
         self._number_of_levels = number_of_levels
@@ -31,6 +32,7 @@ class HPG(ABC):
                 similarity_metric,
                 minimum_merging_margin=minimum_merging_margin,
                 maximum_merging_margin=maximum_merging_margin,
+                deep_copy=deep_copy,
             )
         ]
 
@@ -245,8 +247,11 @@ class HPG2D(HPG):
 
 class HPG2DParallel(HPG2D):
     def as_graph(self, graph_type, *args, **kwargs):
-        pool = kwargs.get("pool", None)
-        if pool is None:
+        if "pool" in kwargs:
+            logger.info("Utilizing the existing process pool")
+            pool = kwargs["pool"]
+        else:
+            logger.info("Instantiating a new process pool")
             pool = concurrent.futures.ProcessPoolExecutor(os.cpu_count())
 
         logger.debug(
@@ -381,6 +386,7 @@ class HPG2DParallel(HPG2D):
             self._graphs_per_level[lvl] = graph_of_lvl
 
         if "pool" not in kwargs:
+            logger.info("Shutting down the scope specific process pool")
             pool.shutdown(wait=True)
 
         return self

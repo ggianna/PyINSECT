@@ -8,13 +8,20 @@ logger = logging.getLogger(__name__)
 
 class GraphIndex(object):
     def __init__(
-        self, similarity_metric, minimum_merging_margin=0.8, maximum_merging_margin=0.9
+        self,
+        similarity_metric,
+        minimum_merging_margin=0.8,
+        maximum_merging_margin=0.9,
+        deep_copy=False,
     ):
         super().__init__()
 
+        self.similarity_metric = similarity_metric
+
         self.minimum_merging_margin = minimum_merging_margin
         self.maximum_merging_margin = maximum_merging_margin
-        self.similarity_metric = similarity_metric
+
+        self._deep_copy = deep_copy
 
         self._graph_index = []
 
@@ -56,7 +63,7 @@ class GraphIndex(object):
                 logger.debug(
                     "Merging graph %s into existing graph %s", graph, other_graph
                 )
-                other_graph = union(other_graph, graph)
+                other_graph = union(other_graph, graph, dc=self._deep_copy)
                 count = count + 1
 
                 self._graph_index[index] = (other_graph, count)
