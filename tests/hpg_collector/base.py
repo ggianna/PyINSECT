@@ -5,6 +5,9 @@ import string
 class HPGCollectorTestCaseMixin(object):
     collector_type = None
 
+    def _construct_collector(self, *args, **kwargs):
+        return self.collector_type(*args, **kwargs)
+
     def setUp(self):
         super().setUp()
 
@@ -22,7 +25,7 @@ class HPGCollectorTestCaseMixin(object):
         ]
 
     def test_appropriateness_of(self):
-        collector = self.collector_type()
+        collector = self._construct_collector()
 
         for entry in self.train_data:
             collector.add(entry)

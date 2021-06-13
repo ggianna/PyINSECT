@@ -2,7 +2,7 @@ import concurrent
 
 from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
 from pyinsect.documentModel.representations.hpg import HPG2D, HPG2DParallel
-from tests.base import BaseTestCase
+from tests.base import BaseParallelTestCase, BaseTestCase
 from tests.hpg.base import HPGTestCaseMixin
 
 
@@ -10,40 +10,47 @@ class HPG2DTestCase(HPGTestCaseMixin, BaseTestCase):
     graph_type = HPG2D
 
 
-class HPG2DParallelTestCase(HPGTestCaseMixin, BaseTestCase):
+class HPG2DParallelTestCase(HPGTestCaseMixin, BaseParallelTestCase):
     graph_type = HPG2DParallel
+
+    def _construct_graph(
+        self, data, window_size, number_of_levels, similarity_metric, *args, **kwargs
+    ):
+        return super()._construct_graph(
+            data,
+            window_size,
+            number_of_levels,
+            similarity_metric,
+            *args,
+            pool=self.pool,
+            **kwargs
+        )
 
     def test_equality_non_parallel(self):
         graph1 = HPG2D(self.data, 3, 3, self.array_graph_metric).as_graph(
             DocumentNGramGraph
         )
 
-        graph2 = self.graph_type(self.data, 3, 3, self.array_graph_metric).as_graph(
-            DocumentNGramGraph
-        )
+        graph2 = self._construct_graph(self.data, 3, 3, self.array_graph_metric)
 
         self.assertEqual(graph1, graph2)
 
     def test_concurrency_on_graph_construction(self):
-        with concurrent.futures.ProcessPoolExecutor(2) as pool:
-            self.graph_type(self.data, 3, 3, self.array_graph_metric).as_graph(
-                DocumentNGramGraph, pool=pool
-            )
+        self._construct_graph(self.data, 3, 3, self.array_graph_metric)
 
     def test_concurrency_on_all_levels(self):
-        results = []
+        futures = []
 
-        with concurrent.futures.ProcessPoolExecutor(2) as pool:
-            futures = []
+        for _ in range(2):
+            future = self.pool.submit(
+                self._construct_graph,
+                self.data,
+                3,
+                3,
+                self.array_graph_metric,
+            )
 
-            for _ in range(2):
-                future = pool.submit(
-                    self.graph_type(self.data, 3, 3, self.array_graph_metric).as_graph,
-                    DocumentNGramGraph,
-                    pool=pool,
-                )
+            futures.append(future)
 
-                futures.append(future)
-
-            for future in concurrent.futures.as_completed(futures):
-                results.append(future.result())
+        for future in concurrent.futures.as_completed(futures):
+            future.result()
