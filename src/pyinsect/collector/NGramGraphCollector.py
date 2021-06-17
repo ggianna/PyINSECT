@@ -11,6 +11,7 @@ from pyinsect.documentModel.representations.DocumentNGramSymWinGraph import (
     DocumentNGramSymWinGraph,
 )
 from pyinsect.documentModel.representations.hpg import HPG2D, HPG2DParallel
+from pyinsect.structs.array_graph import ArrayGraph2D
 
 logger = logging.getLogger(__name__)
 
@@ -148,6 +149,35 @@ class NGramGraphCollector(NGramGraphCollectorBase):
             deep_copy=deep_copy,
             commutative=commutative,
             distributional=distributional,
+        )
+
+
+class ArrayGraph2DCollector(NGramGraphCollector):
+    def __init__(
+        self,
+        n=3,
+        window_size=3,
+        deep_copy=False,
+        commutative=True,
+        distributional=True,
+        stride=1,
+    ):
+        super().__init__(
+            n=n,
+            window_size=window_size,
+            deep_copy=deep_copy,
+            commutative=commutative,
+            distributional=distributional,
+        )
+
+        self._stride = stride
+
+    def __str__(self):
+        return "{0}, stride: {1}".format(super().__str__(), self._stride)
+
+    def _construct_graph(self, data, *args, **kwargs):
+        return ArrayGraph2D(data, self._window_size, stride=self._stride).as_graph(
+            DocumentNGramGraph, self._n, self._window_size
         )
 
 

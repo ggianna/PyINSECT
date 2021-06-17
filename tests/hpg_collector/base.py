@@ -2,8 +2,9 @@ import random
 import string
 
 
-class HPGCollectorTestCaseMixin(object):
+class Collector2DTestCaseMixin(object):
     collector_type = None
+    scores = [0.5, 0.5, 0.001]
 
     def _construct_collector(self, *args, **kwargs):
         return self.collector_type(*args, **kwargs)
@@ -18,11 +19,16 @@ class HPGCollectorTestCaseMixin(object):
             self.generate_random_2d_int_array(5),
         ]
 
-        self.test_data = [
-            (self.train_data[0], 0.5),
-            (self.transpose(self.train_data[1]), 0.5),
-            (self.generate_random_2d_int_array(6), 0.001),
-        ]
+        self.test_data = list(
+            zip(
+                [
+                    self.train_data[0],
+                    self.transpose(self.train_data[1]),
+                    self.generate_random_2d_int_array(6),
+                ],
+                self.scores,
+            )
+        )
 
     def test_appropriateness_of(self):
         collector = self._construct_collector()

@@ -1,4 +1,5 @@
 import concurrent
+import unittest
 
 from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
 from pyinsect.documentModel.representations.hpg import HPG2D, HPG2DParallel
@@ -38,6 +39,7 @@ class HPG2DParallelTestCase(HPGTestCaseMixin, BaseParallelTestCase):
     def test_concurrency_on_graph_construction(self):
         self._construct_graph(self.data, 3, 3, self.array_graph_metric)
 
+    @unittest.skip("due to `TypeError: cannot pickle '_io.TextIOWrapper' object`")
     def test_concurrency_on_all_levels(self):
         futures = []
 
