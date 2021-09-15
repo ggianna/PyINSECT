@@ -1,0 +1,27 @@
+{
+    "version": 1,
+    "disable_existing_loggers": true,
+    "formatters": {
+        "standard": {
+            "format": "%(levelname)s:%(name)s: %(message)s"
+        }
+    },
+    "handlers": {
+        "default": {
+            "level": "CRITICAL",
+            "formatter": "standard",
+            "class": "concurrent_log_handler.ConcurrentRotatingFileHandler",
+            "filename": "tests.log",
+            "maxBytes": 104857600,
+            "backupCount": 10
+        }
+    },
+    "loggers": {
+        "": {
+            "handlers": [
+                "default"
+            ],
+            "level": "CRITICAL"
+        }
+    }
+}
