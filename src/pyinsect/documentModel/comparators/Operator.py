@@ -8,6 +8,12 @@ class Operator(object):
     def __init__(self):
         pass
 
+    def apply(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return self.apply(*args, **kwargs)
+
 
 # a genera Unary operator class
 # raising a value error on appliance
@@ -32,9 +38,6 @@ class Clone(UnaryOperator):
 # a general NaryOperator class
 class NaryOperator(Operator):
     def __init__(self):
-        pass
-
-    def apply(self, *args):
         pass
 
 
@@ -85,45 +88,19 @@ class Union(BinaryOperator):
         g1, g2 = args
         a = g1
         b = g2
-        indexer = [0, 1]
         # If graphs operation is commutative
         # replace it's appliance order
         if self._commutative:
-            if g1.size() < g2.size():
+            if len(g1) < len(g2):
                 a = g2
                 b = g1
-                indexer = [1, 0]
         # applies deepcopy only on argument a
         if dc:
             r = copy.deepcopy(a)
         else:
             r = a
 
-        gg2 = b.getGraph()
-        rg = r.getGraph()
-        re = set(rg.edges())  # Convert edge-list to set to speed-up look-up
-
-        # pseudocode:
-        # For graphs G1,G2 where smallGraph = min(G1,G2) & bigGraph = max(G1,G2)
-        # bigGraph gets deepcopied to bigGraph'
-        # For all (A,B) belongs in smallGraph edges
-        #    if (A,B) belongs also to bigGraph edges (deep-copied graph)
-        #       replace the weight with value w1*lf+w2*(1-lf) on bigGraph'
-        #    else
-        #       add edge to bigGraph' with the value it has on small graph
-        # return bigGraph'
-        for (u, v, w) in gg2.edges(data=True):
-            if (u, v) in re:
-                ed = rg.get_edge_data(u, v)
-                indexed = [ed["weight"], w["weight"]]
-                wp = (
-                    self._lf * indexed[indexer[0]]
-                    + (1 - self._lf) * indexed[indexer[1]]
-                )
-            else:
-                wp = w["weight"]
-            r.setEdge(u, v, wp)
-        return r
+        return r.union(b, learning_factor=self._lf)
 
 
 # possibly not optimal
@@ -393,7 +370,7 @@ class ParallelNary(NaryOperator):
                 if (count % 2) == 1:
                     l.append((prev, thing))
                 else:
-                    prev = thing
+                    pass
 
             # create a mutable object to pass to threads
             fargs = {}

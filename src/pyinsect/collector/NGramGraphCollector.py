@@ -1,133 +1,311 @@
-"""
- An n-gram graph collector, which can create representative graphs of text/graph sets
- and can calculate appropriateness (essentially the similarity) of a text, with respect
- to the representative graph.
+import logging
+from abc import ABC, abstractmethod
 
- @author ggianna
-"""
-
-import random
-import time
-from abc import ABC, abstractclassmethod
-
-from pyinsect.documentModel.comparators.NGramGraphSimilarity import SimilarityNVS
+from pyinsect.documentModel.comparators.NGramGraphSimilarity import (
+    SimilarityHPG,
+    SimilarityNVS,
+)
 from pyinsect.documentModel.comparators.Operator import Union
 from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
+from pyinsect.documentModel.representations.DocumentNGramSymWinGraph import (
+    DocumentNGramSymWinGraph,
+)
+from pyinsect.documentModel.representations.hpg import HPG2D, HPG2DParallel
+from pyinsect.structs.array_graph import ArrayGraph2D
+
+logger = logging.getLogger(__name__)
 
 
 class GraphCollector(ABC):
-    def __init__(self):
-        self._iDocs = 0.0
-        self._gOverallGraph = None
+    """
+    An n-gram graph collector, which can create representative graphs of text/graph sets
+    and can calculate appropriateness (essentially the similarity) of a text, with respect
+    to the representative graph.
+    """
 
-    @abstractclassmethod
-    def construct_graph(cls, *args, **kwargs):
+    def __init__(self, similarity_metric):
+        self._number_of_docs = 0
+
+        self._similarity_metric = similarity_metric
+
+    def __len__(self):
+        return self._number_of_docs
+
+    def __str__(self):
+        return "number of documents: {0}, similarity metric: {1}".format(
+            self._number_of_docs, self._similarity_metric.__class__.__name__
+        )
+
+    def __repr__(self):
+        return '<{0} "{1}">'.format(self.__class__.__name__, str(self))
+
+    @abstractmethod
+    def add(self, *args, **kwargs):
         raise NotImplementedError
 
-    """
-        Adds the graph of the input text to the representative graph.
-    """
+    @abstractmethod
+    def appropriateness_of(self, *args, **kwargs):
+        raise NotImplementedError
 
-    def addText(self, sText, bDeepCopy=False, n=3, Dwin=3):
-        ngg1 = self.construct_graph(n, Dwin, sText)
-        self.addGraph(ngg1, bDeepCopy)
 
-    """
-        Adds the graph input to the representative graph.
-    """
+class NGramGraphCollectorBase(GraphCollector):
+    def __init__(
+        self,
+        similarity_metric,
+        n=3,
+        window_size=3,
+        deep_copy=False,
+        commutative=True,
+        distributional=True,
+    ):
+        super().__init__(similarity_metric)
 
-    def addGraph(self, gNewGraph, bDeepCopy=False):  # Do NOT use deep copy by default
-        if self._iDocs == 0:
-            self._gOverallGraph = gNewGraph
-        else:
-            bop = Union(
-                lf=1.0 / (self._iDocs + 1.0), commutative=True, distributional=True
-            )
-            self._gOverallGraph = bop.apply(
-                self._gOverallGraph, gNewGraph, dc=bDeepCopy
-            )
-        # Added a doc
-        self._iDocs += 1
+        self._deep_copy = deep_copy
+        self._n = n
+        self._window_size = window_size
 
-    """
-        Returns a degree of ''appropriateness'' of a text, given the representative graph.
+        self._commutative = commutative
+        self._distributional = distributional
+
+        self._representative_graph = None
+
+    def __str__(self):
+        return "{0}, n-gram rank: {1}, window size: {2}".format(
+            super().__str__(), self._n, self._window_size
+        )
+
+    def add(self, text):
+        """Adds the graph of the input text to the representative graph."""
+
+        logger.debug("Constructing graph from %s", text)
+        graph = self._construct_graph(text)
+
+        logger.debug("Adding graph %s", graph)
+        self._add_graph(graph)
+
+    def appropriateness_of(self, text):
+        """
+        Returns a degree of `appropriateness` of a text, given the representative graph.
         Essentially it calculates the Normalized Value Similarity of the text to the representative graph.
-    """
+        """
 
-    def getAppropriateness(self, sText, n=3, Dwin=3):
-        nggNew = self.construct_graph(n, Dwin, sText)
-        gs = SimilarityNVS()
-        return gs.getSimilarityDouble(nggNew, self._gOverallGraph)
+        logger.debug("Constructing graph from %s", text)
+        graph = self._construct_graph(text)
 
-    """
-        Returns a degree of ''appropriateness'' of a graph, given the representative graph.
+        logger.debug("Calculating the appropriateness of graph %s", graph)
+        return self._appropriateness_of_graph(graph)
+
+    def _construct_graph(self, data, *args, **kwargs):
+        return DocumentNGramGraph(self._n, self._window_size, data)
+
+    def _add_graph(self, graph):
+        """Adds the graph input to the representative graph."""
+
+        if self._number_of_docs == 0:
+            logger.debug(
+                "No documents parsed yet. Assigning %s as the representative graph",
+                graph,
+            )
+            self._representative_graph = graph
+        else:
+            union = Union(
+                lf=1 / (self._number_of_docs + 1),
+                commutative=self._commutative,
+                distributional=self._distributional,
+            )
+
+            logger.debug(
+                "Merging graph %s into representative graph %s (deep_copy=%r)",
+                graph,
+                self._representative_graph,
+                self._deep_copy,
+            )
+            self._representative_graph = union.apply(
+                self._representative_graph, graph, dc=self._deep_copy
+            )
+
+        logging.debug(
+            "Incrementing the number of documents to %02d", self._number_of_docs
+        )
+        self._number_of_docs += 1
+
+    def _appropriateness_of_graph(self, graph):
+        """
+        Returns a degree of `appropriateness` of a graph, given the representative graph.
         Essentially it calculates the Normalized Value Similarity of the graph to the representative graph.
-    """
+        """
 
-    def getGraphAppropriateness(self, gGraph):
-        gs = SimilarityNVS()
-        return gs.getSimilarityDouble(gGraph, self._gOverallGraph)
-
-    """
-     Returns the representative graph of the collection input.
-    """
-
-    def getRepresentativeGraph(self):
-        return self._gOverallGraph
+        return self._similarity_metric(graph, self._representative_graph)
 
 
-class NGramGraphCollector(GraphCollector):
-    def construct_graph(cls, n, Dwin, sText, *args, **kwargs):
-        return DocumentNGramGraph(n, Dwin, sText)
+class NGramGraphCollector(NGramGraphCollectorBase):
+    def __init__(
+        self, n=3, window_size=3, deep_copy=False, commutative=True, distributional=True
+    ):
+        super().__init__(
+            SimilarityNVS(),
+            n=n,
+            window_size=window_size,
+            deep_copy=deep_copy,
+            commutative=commutative,
+            distributional=distributional,
+        )
 
 
-if __name__ == "__main__":
+class ArrayGraph2DCollector(NGramGraphCollector):
+    def __init__(
+        self,
+        n=3,
+        window_size=3,
+        deep_copy=False,
+        commutative=True,
+        distributional=True,
+        stride=1,
+    ):
+        super().__init__(
+            n=n,
+            window_size=window_size,
+            deep_copy=deep_copy,
+            commutative=commutative,
+            distributional=distributional,
+        )
 
-    def getRandomText(iSize):
-        # lCands = list("abcdefghijklmnopqrstuvwxyz" + "abcdefghijklmnopqrstuvwxyz".upper() + "1234567890!@#$%^&*()")
-        lCands = list("abcdef")
-        sRes = "".join([random.choice(lCands) for i in range(1, iSize)])
-        return sRes
+        self._stride = stride
 
-    # Start test
-    import time
+    def __str__(self):
+        return "{0}, stride: {1}".format(super().__str__(), self._stride)
 
-    print("Initializing texts...")
-    lTexts = list()
-    for iCnt in range(0, 50):
-        # Select text size
-        iSize = random.randint(1000, 2000)
-        sText = getRandomText(iSize)
-        # Add to list
-        lTexts.append(sText)
-    print("Initializing texts... Done.")
+    def _construct_graph(self, data, *args, **kwargs):
+        return ArrayGraph2D(data, self._window_size, stride=self._stride).as_graph(
+            DocumentNGramGraph, self._n, self._window_size
+        )
 
-    print("Starting shallow...")
-    cNoDeep = NGramGraphCollector()
-    start = time.time()
-    lastStep = start
-    # No deep
-    iCnt = 0
-    for sText in lTexts:
-        cNoDeep.addText(sText)
-        iCnt += 1
-        if time.time() - lastStep > 1:
-            print("..." + str(iCnt))
-            lastStep = time.time()
 
-    end = time.time()
-    print((end - start))
-    print("End shallow.")
+class HPG2DCollectorBase(GraphCollector):
+    def __init__(
+        self,
+        similarity_metric,
+        graph_type,
+        *args,
+        window_size=3,
+        number_of_levels=3,
+        minimum_merging_margin=0.8,
+        maximum_merging_margin=0.9,
+        stride=1,
+        **kwargs
+    ):
+        super().__init__(SimilarityHPG(similarity_metric))
 
-    # print "Starting deep..."
-    # cDeep = NGramGraphCollector()
-    # start = time.time()
-    # # Deep
-    # for sText in lTexts:
-    #     cDeep.addText(sText, True)
-    #     if (time.time() - lastStep > 1):
-    #         print "."
-    #         lastStep = time.time()
-    # end = time.time()
-    # print(end - start)
-    # print "End deep."
+        self._window_size = window_size
+        self._number_of_levels = number_of_levels
+        self._per_graph_similarity_metric = similarity_metric
+        self._minimum_merging_margin = minimum_merging_margin
+        self._maximum_merging_margin = maximum_merging_margin
+        self._stride = stride
+
+        self._graph_type = graph_type
+        self._per_graph_args = args
+        self._per_graph_kwargs = kwargs
+
+        self._graphs = []
+
+    def __str__(self):
+        return "{0}, window size: {1}, stride: {2}, number of levels: {3}, graph type: {4}".format(
+            super().__str__(),
+            self._window_size,
+            self._stride,
+            self._number_of_levels,
+            self._graph_type,
+        )
+
+    def add(self, matrix_2d):
+        logger.debug("Constructing graph from %s", matrix_2d)
+
+        graph = self._construct_graph(matrix_2d)
+
+        logger.debug("Adding graph %s", graph)
+        self._add_graph(graph)
+
+    def appropriateness_of(self, matrix_2d):
+        logger.debug("Constructing graph from %s", matrix_2d)
+
+        graph = self._construct_graph(matrix_2d)
+
+        logger.debug("Calculating the appropriateness of graph %s", graph)
+        return self._appropriateness_of_graph(graph)
+
+    def _construct_graph(self, data, *args, **kwargs):
+        return HPG2D(
+            data,
+            self._window_size,
+            self._number_of_levels,
+            self._per_graph_similarity_metric,
+            minimum_merging_margin=self._minimum_merging_margin,
+            maximum_merging_margin=self._maximum_merging_margin,
+            stride=self._stride,
+        ).as_graph(self._graph_type, *self._per_graph_args, **self._per_graph_kwargs)
+
+    def _add_graph(self, graph):
+        logger.debug("Appending graph %s to the list of graphs", graph)
+        self._graphs.append(graph)
+
+    def _appropriateness_of_graph(self, graph):
+        similarity = 0
+
+        for index, other_graph in enumerate(self._graphs):
+            logger.debug(
+                "Calculating the '%r' similarity on level %02d between graph %s and graph %s",
+                self._similarity_metric,
+                index,
+                graph,
+                other_graph,
+            )
+
+            current_similarity = self._similarity_metric(other_graph, graph) / len(
+                self._graphs
+            )
+
+            logger.debug(
+                "The '%r' similarity on level %02d between graph %s and graph %s is %05.3f",
+                self._similarity_metric,
+                index,
+                graph,
+                other_graph,
+                current_similarity,
+            )
+
+            similarity += current_similarity
+
+            logger.debug(
+                "The overall similarity of graph %s and graph %s is %05.3f",
+                graph,
+                other_graph,
+                similarity,
+            )
+
+        return similarity
+
+
+class HPG2DCollector(HPG2DCollectorBase):
+    def __init__(self, window_size=2, number_of_levels=5, stride=1, **kwargs):
+        super().__init__(
+            SimilarityNVS(),
+            DocumentNGramSymWinGraph,
+            window_size=window_size,
+            number_of_levels=number_of_levels,
+            stride=stride,
+            **kwargs
+        )
+
+
+class HPG2DCollectorParallel(HPG2DCollector):
+    def _construct_graph(self, data, *args, **kwargs):
+        return HPG2DParallel(
+            data,
+            self._window_size,
+            self._number_of_levels,
+            self._per_graph_similarity_metric,
+            minimum_merging_margin=self._minimum_merging_margin,
+            maximum_merging_margin=self._maximum_merging_margin,
+            stride=self._stride,
+        ).as_graph(self._graph_type, *self._per_graph_args, **self._per_graph_kwargs)

@@ -1,11 +1,10 @@
-import unittest
-
 from pyinsect.documentModel.comparators.NGramGraphSimilarity import SimilarityNVS
-from pyinsect.documentModel.representations import DocumentNGramGraph
+from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
 from pyinsect.indexing.graph_index import GraphIndex
+from tests.base import BaseTestCase
 
 
-class GraphIndexTestCase(unittest.TestCase):
+class GraphIndexTestCase(BaseTestCase):
     train_data = [
         "Life isn’t about getting and having, it’s about giving and being.",
         "Whatever the mind of man can conceive and believe, it can achieve.",
@@ -18,6 +17,8 @@ class GraphIndexTestCase(unittest.TestCase):
     ]
 
     def setUp(self):
+        super().setUp()
+
         self.graph_index = GraphIndex(SimilarityNVS())
 
     def test_when_empty_all_different_should_return_different_indices(self):

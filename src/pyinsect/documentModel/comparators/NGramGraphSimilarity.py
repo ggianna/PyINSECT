@@ -10,10 +10,11 @@
  Created on May 24, 2017, 3:56 PM
 """
 
-from functools import reduce
+import logging
 
 from pyinsect.documentModel.comparators.Operator import BinaryOperator
 
+logger = logging.getLogger(__name__)
 
 # a general similarity class
 # that acts as a pseudo-interface
@@ -126,9 +127,13 @@ class SimilarityNVS(Similarity):
     def getSimilarityDouble(self, ngg1, ngg2):
         SS = SimilaritySS()
         VS = SimilarityVS()
-        return (VS.getSimilarityDouble(ngg1, ngg2) * 1.0) / SS.getSimilarityDouble(
-            ngg1, ngg2
-        )
+
+        try:
+            return (VS.getSimilarityDouble(ngg1, ngg2) * 1.0) / SS.getSimilarityDouble(
+                ngg1, ngg2
+            )
+        except ZeroDivisionError:
+            return 0.0
 
     # given two ngram graphs
     # returns the NVS-similarity
@@ -154,40 +159,88 @@ class SimilarityNVS(Similarity):
 
 class SimilarityHPG(Similarity):
     """A custom `Similarity` metric tailored to the complexities
-    of Hierarchical Proximity Graphs (HPG - `DocumentNGramHGraph`).
+    of Hierarchical Proximity Graphs (`HPG`).
 
     Given two HPGs, the `Value Similarity` of every sub-graph pair is computed,
     on a pair level basis, and the weighted mean of among all levels is considered
     the HPGs Value Similarity.
     """
 
-    def __init__(
-        self, per_level_similarity_metric_type, commutative=True, distributional=False
-    ):
-        super().__init__(commutative=commutative, distributional=distributional)
+    def __init__(self, per_level_similarity_metric):
+        super().__init__()
 
-        self._per_level_similarity_metric = per_level_similarity_metric_type(
-            commutative=commutative, distributional=distributional
-        )
+        self._per_level_similarity_metric = per_level_similarity_metric
 
     def getSimilarityDouble(self, document_n_gram_h_graph1, document_n_gram_h_graph2):
         if not document_n_gram_h_graph1 and not document_n_gram_h_graph2:
+            logger.debug(
+                "Both %s and %s graphs are empty",
+                document_n_gram_h_graph1,
+                document_n_gram_h_graph2,
+            )
             return 1
 
         if not document_n_gram_h_graph1 or not document_n_gram_h_graph2:
+            logger.debug(
+                "One of %s and %s graphs are empty",
+                document_n_gram_h_graph1,
+                document_n_gram_h_graph2,
+            )
             return 0
 
-        similarity = 0
+        lvls, similarity = [], 0
 
-        for level, (current_1, current_2) in enumerate(
+        for lvl, (current_1, current_2) in enumerate(
             zip(document_n_gram_h_graph1, document_n_gram_h_graph2), start=1
         ):
+            logger.debug(
+                "Calculating similarity of graphs %s and %s on level %02d",
+                current_1,
+                current_2,
+                lvl,
+            )
+
+            if not current_1 and not current_2:
+                # NOTE: In the context a multi-level HPG, it is highly probable that,
+                # one or more sub-graph might degenerate to empty graphs.
+                # Given a similarity metric such as `SimilarityNVS`,
+                # this would entail, that the similarity of two identical HPGs,
+                # containing empty sub-graphs would not receive the expected
+                # value of 1.
+                # For the time being, such degenerate sub-graphs are going
+                # to be completely ignored when calculating the similarity of
+                # 2 HPGs.
+                # For example, given 2 5 level HPGs, if levels 4 and 5 are empty
+                # and every other corresponding sub-graphs of the two are identical
+                # the HPG similarity of the two is going to be calculated as such
+                # `(1 * 1 + 1 * 2 + 1 * 3) / (1 + 2 + 3)`
+                # instead of
+                # `(1 * 1 + 1 * 2 + 1 * 3 + 0 * 4 + 0 * 5) / (1 + 2 + 3 + 4 + 5)`
+                logger.debug("Both %s and %s graphs are empty", current_1, current_2)
+                continue
+
             current_lvl_similarity = (
                 self._per_level_similarity_metric.getSimilarityDouble(
                     current_1, current_2
                 )
             )
 
-            similarity += level * current_lvl_similarity
+            logger.debug(
+                "The similarity of graphs %s and %s is %05.3f",
+                current_1,
+                current_2,
+                current_lvl_similarity,
+            )
 
-        return similarity / reduce(lambda x, y: x + y, range(1, level + 1))
+            similarity += lvl * current_lvl_similarity
+
+            logger.debug(
+                "The overall similarity of graph %s and graph %s is %05.3f",
+                document_n_gram_h_graph1,
+                document_n_gram_h_graph2,
+                (similarity / sum(lvls)) if lvls else 0,
+            )
+
+            lvls.append(lvl)
+
+        return similarity / sum(lvls) if lvls else 0

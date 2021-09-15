@@ -7,10 +7,14 @@
  *
 """
 
+import logging
+
 import matplotlib.pyplot as plt
 import networkx as nx
-import pygraphviz as pgv
+from networkx.algorithms.isomorphism import numerical_edge_match
 from networkx.drawing.nx_agraph import graphviz_layout
+
+logger = logging.getLogger(__name__)
 
 """
  *  Represents the graph of a document, with vertices n-grams of the document and edges the number
@@ -53,6 +57,14 @@ class DocumentNGramGraph:
         if not (self._Data == []):
             self.buildGraph()
 
+    def __len__(self):
+        return self._Graph.size()
+
+    def __eq__(self, other):
+        return nx.is_isomorphic(
+            self._Graph, other._Graph, edge_match=numerical_edge_match("weight", 1)
+        )
+
     # we will now define @method buildGraph
     # which takes a data input
     # segments ngrams
@@ -62,13 +74,13 @@ class DocumentNGramGraph:
     def buildGraph(self, verbose=False, d=[]):
         # set Data @class_var
         self.setData(d)
-        Data = self._Data
+        self._Data
 
         # build ngram
         ng = self.build_ngram()
         s = len(ng)
 
-        win = self._Dwin
+        self._Dwin
 
         # init graph
         # TODO: add clear function
@@ -194,9 +206,6 @@ class DocumentNGramGraph:
     def setDwin(self, win):
         self._Dwin = win
 
-    def size(self):
-        return self._Graph.size()
-
     ## get functions for structures protected fields
     def getMin(self):
         return self._MinSize
@@ -215,6 +224,42 @@ class DocumentNGramGraph:
 
     def number_of_edges(self):
         return self._Graph.number_of_nodes()
+
+    def union(self, other, learning_factor=0.5):
+        """
+
+        Pseudocode:
+
+            For graphs G1,G2 where smallGraph = min(G1,G2) & bigGraph = max(G1,G2)
+            bigGraph gets deepcopied to `bigGraph`
+            For all (A,B) belongs in smallGraph edges
+            if (A,B) belongs also to bigGraph edges (deep-copied graph)
+                replace the weight with value w1*lf+w2*(1-lf) on `bigGraph`
+            else
+                add edge to `bigGraph` with the value it has on small graph
+            return `bigGraph`
+        """
+
+        other_graph = other.getGraph()
+
+        # Convert edge-list to set to speed-up look-up
+        edge_set = set(self._Graph.edges())
+
+        for (vertex_start, vertex_end, edge_data) in other_graph.edges(data=True):
+            edge_weight = edge_data["weight"]
+
+            if (vertex_start, vertex_end) in edge_set:
+                current_edge_data = self._Graph.get_edge_data(vertex_start, vertex_end)
+                current_edge_weight = current_edge_data["weight"]
+
+                edge_weight = (
+                    learning_factor * edge_weight
+                    + (1 - learning_factor) * current_edge_weight
+                )
+
+            self.setEdge(vertex_start, vertex_end, edge_weight)
+
+        return self
 
 
 # test script

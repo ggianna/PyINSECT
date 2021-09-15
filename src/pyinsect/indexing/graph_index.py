@@ -1,35 +1,69 @@
+import logging
+
 from pyinsect.documentModel.comparators.Operator import Union
 from pyinsect.documentModel.comparators.Operator import inverse_intersection as AllNotIn
+
+logger = logging.getLogger(__name__)
 
 
 class GraphIndex(object):
     def __init__(
-        self, similarity_metric, minimum_merging_margin=0.8, maximum_merging_margin=0.9
+        self,
+        similarity_metric,
+        minimum_merging_margin=0.8,
+        maximum_merging_margin=0.9,
+        deep_copy=False,
     ):
         super().__init__()
 
+        self.similarity_metric = similarity_metric
+
         self.minimum_merging_margin = minimum_merging_margin
         self.maximum_merging_margin = maximum_merging_margin
-        self.similarity_metric = similarity_metric
+
+        self._deep_copy = deep_copy
 
         self._graph_index = []
 
         self.all_not_in = AllNotIn()
 
     def __getitem__(self, graph):
+        logger.debug("Inserting graph %s", graph)
+
         matching_index = -1
 
         for index, (other_graph, count) in enumerate(self._graph_index):
-            similarity = self.similarity_metric.apply(graph, other_graph)
+            logger.debug(
+                "Comparing graph %s with graph %s on index %02d",
+                graph,
+                other_graph,
+                index,
+            )
+
+            similarity = self.similarity_metric(graph, other_graph)
+
+            logger.debug(
+                "The similarity between graph %s and %s is %05.3f",
+                graph,
+                other_graph,
+                similarity,
+            )
 
             if similarity >= self.maximum_merging_margin:
+                logger.debug("Found matching index %02d for graph %s", index, graph)
                 matching_index = index
                 break
 
             if similarity >= self.minimum_merging_margin:
+                logger.debug(
+                    "Found near perfect matching index %02d for graph %s", index, graph
+                )
                 union = Union(lf=1 - (count / (count + 1)))
 
-                other_graph = union.apply(graph, other_graph)
+                logger.debug(
+                    "Merging graph %s into existing graph %s", graph, other_graph
+                )
+                other_graph = union(other_graph, graph, dc=self._deep_copy)
                 count = count + 1
 
                 self._graph_index[index] = (other_graph, count)
@@ -38,10 +72,21 @@ class GraphIndex(object):
                 break
 
             if 1.0 - similarity > 10e-5:
-                graph = self.all_not_in.apply(other_graph, graph)
+                logger.debug(
+                    "No match yet. Perform inversely intersect graph %s with existing graph %s",
+                    graph,
+                    other_graph,
+                )
+                graph = self.all_not_in(graph, other_graph, dc=self._deep_copy)
 
         if matching_index < 0:
             matching_index = len(self._graph_index)
+
+            logger.debug(
+                "No match for graph %s. Creating a new entry at index %02d",
+                graph,
+                matching_index,
+            )
 
             self._graph_index.append((graph, 1))
 

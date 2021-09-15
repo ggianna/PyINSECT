@@ -1,10 +1,9 @@
-import unittest
-
-from pyinsect.documentModel.representations import DocumentNGramGraph
+from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
 from pyinsect.structs.array_graph import ArrayGraph2D
+from tests.base import BaseTestCase
 
 
-class ArrayGraphTestCase(unittest.TestCase):
+class ArrayGraphTestCase(BaseTestCase):
     def test_array_graph_as_document_n_gram_gram_array_divisible_by_window(self):
         train_data = [[i for i in range(9)] for j in range(9)]
 
