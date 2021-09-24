@@ -1,6 +1,8 @@
 import logging
 from abc import ABC, abstractmethod
 
+from pyinsect.documentModel.representations.DocumentNGramGraph import DocumentNGramGraph
+
 logger = logging.getLogger(__name__)
 
 
@@ -74,12 +76,12 @@ class ArrayGraph2D(ArrayGraph):
 
         y_min, y_max = self._get_window(current_y, len(self._data), self._window_size)
 
-        for neighbor_y in range(y_min, y_max):
+        for neighbor_y in range(y_min, y_max + 1):
             x_min, x_max = self._get_window(
                 current_x, len(self._data[neighbor_y]), self._window_size
             )
-            for neighbor_x in range(x_min, x_max):
-                if neighbor_x != current_x and neighbor_y != current_y:
+            for neighbor_x in range(x_min, x_max + 1):
+                if neighbor_x != current_x or neighbor_y != current_y:
                     logger.debug(
                         "Adding element %r at position (%02d, %02d) to the list of neighbors",
                         self._data[neighbor_y][neighbor_x],
@@ -120,3 +122,20 @@ class ArrayGraph2D(ArrayGraph):
                 self._process_patch(current_y, current_x)
 
         return self._graph
+
+
+if __name__ == "__main__":
+    # g = ArrayGraph2D([
+    #     [1,  2,  3,  4,  5],
+    #     [6,  7,  8,  9,  10],
+    #     [11, 12, 13, 14, 15],], 3).as_graph(DocumentNGramGraph)
+    g = ArrayGraph2D(
+        [
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9],
+        ],
+        2,
+    ).as_graph(DocumentNGramGraph)
+
+    print(g)
