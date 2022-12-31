@@ -10,7 +10,7 @@ sudo apt-get install python-pip
 sudo pip install networkx
 
 
-# Install MathPlot lib
+# Install Matplotlib
 sudo apt-get install python-dev
 sudo apt-get install python-tk
 sudo python -m pip install matplotlib
