@@ -3,7 +3,7 @@ from networkx.readwrite import json_graph
 import json
 import networkx as nx
 import matplotlib.pyplot as plt
-import pydot
+import logging as log
 
 
 # Add module to search path
@@ -13,7 +13,7 @@ sys.path.insert(0, sDir)
 
 # Init logging
 import pyinsect.utils.logging as pyi_log
-pyi_log.init_logging()
+pyi_log.init_logging(level=log.INFO)
 
 # Import classes
 from pyinsect.graphs.ngram_graphs import (AsymmetricNGramGraph, SymmetricNGramGraph, ProximityGraph)
@@ -45,6 +45,8 @@ def test_ngram_graph_creation():
 
 
     my_str = "1234567"
+    # Asymmetric tests
+    log.log(log.INFO, "Asymmetric tests...")
     my_graph = AsymmetricNGramGraph(data=my_str)
     draw_graph_with_weights(my_graph)
 
@@ -54,9 +56,31 @@ def test_ngram_graph_creation():
     my_graph = AsymmetricNGramGraph(data=my_str, n=2, Dwin=1)
     draw_graph_with_weights(my_graph)
 
-    my_graph = SymmetricNGramGraph(data=my_str)
-    my_json_data = json_graph.adjacency_data(G=my_graph)
+    my_graph = AsymmetricNGramGraph(data=my_str, n=3, Dwin=10)
     draw_graph_with_weights(my_graph)
+
+    my_graph = AsymmetricNGramGraph(data=my_str, n=10, Dwin=3)
+    draw_graph_with_weights(my_graph)
+    log.log(log.INFO, "Asymmetric tests... Done.")
+
+    # Symmetric tests
+    log.log(log.INFO, "Symmetric tests...")
+    my_graph = SymmetricNGramGraph(data=my_str)
+    draw_graph_with_weights(my_graph)
+
+    my_graph = SymmetricNGramGraph(data=my_str, n=1, Dwin=2)
+    draw_graph_with_weights(my_graph)
+
+    my_graph = SymmetricNGramGraph(data=my_str, n=2, Dwin=1)
+    draw_graph_with_weights(my_graph)
+
+    my_graph = SymmetricNGramGraph(data=my_str, n=3, Dwin=10)
+    draw_graph_with_weights(my_graph)
+
+    my_graph = SymmetricNGramGraph(data=my_str, n=10, Dwin=3)
+    draw_graph_with_weights(my_graph)
+    log.log(log.INFO, "Symmetric tests... Done.")
+
 
 def test_ngram_graph_comparison():
     ag1 = AsymmetricNGramGraph()
