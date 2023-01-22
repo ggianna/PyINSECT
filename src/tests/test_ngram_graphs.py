@@ -17,7 +17,7 @@ import pyinsect.utils.logging
 
 # Import classes
 from pyinsect.graphs.ngram_graphs import (AsymmetricNGramGraph, SymmetricNGramGraph, ProximityGraph)
-import pyinsect.graphs.operators.proximity_graph_operators as pgops
+import pyinsect.graphs.operators.ngg_similarity_operators as pgops
 
 
 def test_ngram_graph_creation():
