@@ -195,8 +195,9 @@ Project Link: [https://github.com/ggianna/PyINSECT](https://github.com/ggianna/P
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-* Nikiforos Pittaras
-* Bill Sioros
+* [Nikiforos Pittaras](https://github.com/npit)
+* [Bill Sioros](https://github.com/billsioros)
+* [Ioannis (Yannis) Siglidis](https://github.com/ysig)
 
 ![TODO][todo-shield]
 
