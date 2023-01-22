@@ -1,0 +1,11 @@
+name: base
+channels:
+  - conda-forge
+dependencies:
+  - decorator
+  - networkx
+  - pydot
+  - numpy
+  - matplotlib
+  - pygraphviz
+prefix: /home/ggianna/mambaforge
